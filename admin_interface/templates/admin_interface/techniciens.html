@@ -1,0 +1,54 @@
+{% extends 'admin_interface/base_admin.html' %}
+
+{% block title %}Gestion des Techniciens{% endblock %}
+
+{% block content %}
+
+<div class="container">
+    <!-- ========== TITRE ET BOUTON AJOUTER ========== -->
+    <div class="flex-between" style="margin: 40px 0 30px 0;">
+        <h1 style="margin: 0;">🔧 Gestion des Techniciens</h1>
+        <a href="{% url 'admin_interface:technicien_create' %}" class="btn btn-add">Ajouter un technicien</a>
+    </div>
+
+    <!-- ========== TABLEAU DES TECHNICIENS ========== -->
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>NOM</th>
+                    <th>EMAIL</th>
+                    <th>TÉLÉPHONE</th>
+                    <th>ACTIONS</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for technicien in techniciens %}
+                <tr>
+                    <td><strong>{{ technicien.user.get_full_name }}</strong></td>
+                    <td>{{ technicien.user.email }}</td>
+                    <td>{{ technicien.phone|default:"—" }}</td>
+                    <td>
+                        <div class="action-buttons">
+                            <a href="{% url 'admin_interface:technicien_update' technicien.id %}" class="btn btn-secondary">✏️ Modifier</a>
+                            <a href="{% url 'admin_interface:technicien_delete' technicien.id %}" 
+                               class="btn btn-danger" 
+                               onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce technicien ?')">
+                                🗑️ Supprimer
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="4" class="text-center" style="padding: 40px; color: #999;">
+                        Aucun technicien trouvé. Ajoutez-en un pour commencer.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% endblock %}

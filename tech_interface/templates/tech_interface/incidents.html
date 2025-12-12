@@ -1,0 +1,75 @@
+{% extends "tech_interface/base_tech.html" %}
+{% block title %}Incidents{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="hero">
+    <div>
+        <h1>Gestion des Incidents</h1>
+        <p>Suivez et résolvez les incidents signalés</p>
+    </div>
+</div>
+
+<!-- Contenu principal -->
+<div class="table-container">
+    <div class="flex-between mb-20">
+        <h2>Liste des incidents</h2>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Salle</th>
+                <th>Description</th>
+                <th>Sévérité</th>
+                <th>État</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for inc in incidents %}
+            <tr>
+                <td><strong>#{{ inc.id }}</strong></td>
+                <td>{{ inc.espace.nom }}</td>
+                <td>{{ inc.description|truncatewords:10 }}</td>
+                <td>
+                    {% if inc.severite %}
+                        <span class="status-badge">{{ inc.severite }}</span>
+                    {% else %}
+                        <span style="color: #999;">Non spécifié</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if inc.etat == 'ouvert' %}
+                        <span class="status-badge status-en-attente">Ouvert</span>
+                    {% elif inc.etat == 'en_cours' %}
+                        <span class="status-badge" style="background-color: #74b9ff; color: #0984e3;">En cours</span>
+                    {% elif inc.etat == 'resolu' %}
+                        <span class="status-badge status-validee">Résolu</span>
+                    {% else %}
+                        <span class="status-badge status-refusee">{{ inc.get_etat_display }}</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <div class="action-buttons">
+                        {% if inc.etat == 'ouvert' %}
+                            <a href="{% url 'tech_interface:incident_start' inc.id %}" class="btn">Commencer</a>
+                        {% endif %}
+                        {% if inc.etat != 'resolu' and inc.etat != 'annule' %}
+                            <a href="{% url 'tech_interface:incident_finish' inc.id %}" class="status-badge">Terminer</a>
+                        {% endif %}
+                    </div>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="7" style="text-align: center; color: #999; padding: 40px;">
+                    Aucun incident enregistré
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

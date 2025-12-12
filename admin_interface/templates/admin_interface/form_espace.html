@@ -1,0 +1,112 @@
+{% extends 'admin_interface/base_admin.html' %}
+
+{% block title %}{% if form.instance.pk %}Modifier Espace{% else %}Ajouter Espace{% endif %}{% endblock %}
+
+{% block content %}
+
+<div class="container">
+    <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        
+        <h2>{% if form.instance.pk %}✏️ Modifier un espace{% else %}➕ Ajouter un espace{% endif %}</h2>
+        
+        <!-- Nom -->
+        <div class="form-group">
+            <label for="{{ form.nom.id_for_label }}">Nom de l'espace *</label>
+            {{ form.nom }}
+            {% if form.nom.errors %}
+                <p style="color: #c0392b;">{{ form.nom.errors }}</p>
+            {% endif %}
+        </div>
+
+        <!-- Description -->
+        <div class="form-group">
+            <label for="{{ form.description.id_for_label }}">Description</label>
+            {{ form.description }}
+            {% if form.description.errors %}
+                <p style="color: #c0392b;">{{ form.description.errors }}</p>
+            {% endif %}
+        </div>
+
+        <!-- Type d'espace -->
+        <div class="form-group">
+            <label for="{{ form.type_espace.id_for_label }}">Type d'espace *</label>
+            {{ form.type_espace }}
+            {% if form.type_espace.errors %}
+                <p style="color: #c0392b;">{{ form.type_espace.errors }}</p>
+            {% endif %}
+        </div>
+
+        <!-- Capacité -->
+        <div class="form-group">
+            <label for="{{ form.capacite.id_for_label }}">Capacité (nombre de personnes) *</label>
+            {{ form.capacite }}
+            {% if form.capacite.errors %}
+                <p style="color: #c0392b;">{{ form.capacite.errors }}</p>
+            {% endif %}
+        </div>
+
+        <!-- Ville -->
+        <div class="form-group">
+            <label for="{{ form.ville.id_for_label }}">Ville *</label>
+            {{ form.ville }}
+            {% if form.ville.errors %}
+                <p style="color: #c0392b;">{{ form.ville.errors }}</p>
+            {% endif %}
+        </div>
+
+        <!-- Adresse -->
+        <div class="form-group">
+            <label for="{{ form.adresse.id_for_label }}">Adresse</label>
+            {{ form.adresse }}
+            {% if form.adresse.errors %}
+                <p style="color: #c0392b;">{{ form.adresse.errors }}</p>
+            {% endif %}
+        </div>
+
+        <!-- Équipements -->
+        <div class="form-group">
+            <label for="{{ form.equipements.id_for_label }}">Équipements</label>
+            {{ form.equipements }}
+            <small style="color: #777;">Ex: Vidéoprojecteur, Tableau blanc, Wifi</small>
+            {% if form.equipements.errors %}
+                <p style="color: #c0392b;">{{ form.equipements.errors }}</p>
+            {% endif %}
+        </div>
+
+        <!-- Prix par heure -->
+        <div class="form-group">
+            <label for="{{ form.prix_par_heure.id_for_label }}">Prix par heure *</label>
+            {{ form.prix_par_heure }}
+            {% if form.prix_par_heure.errors %}
+                <p style="color: #c0392b;">{{ form.prix_par_heure.errors }}</p>
+            {% endif %}
+        </div>
+
+        <!-- Image -->
+        <div class="form-group">
+            <label for="{{ form.image.id_for_label }}">Image de l'espace</label>
+            {{ form.image }}
+            {% if form.image.errors %}
+                <p style="color: #c0392b;">{{ form.image.errors }}</p>
+            {% endif %}
+        </div>
+
+        <!-- Disponibilité -->
+        <div class="form-group">
+            <label for="{{ form.disponible.id_for_label }}">Disponible ?</label>
+            {{ form.disponible }}
+            {% if form.disponible.errors %}
+                <p style="color: #c0392b;">{{ form.disponible.errors }}</p>
+            {% endif %}
+        </div>
+
+        <!-- Boutons -->
+        <div class="form-actions">
+            <button type="submit" class="btn">💾 Enregistrer</button>
+            <a href="{% url 'admin_interface:espace_list' %}" class="btn btn-secondary">← Retour à la liste</a>
+        </div>
+    </form>
+</div>
+
+{% endblock %}

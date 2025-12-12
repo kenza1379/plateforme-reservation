@@ -1,0 +1,537 @@
+{% extends "client/base.html" %}
+
+{% block title %}Paiement - {{ reservation.espace.nom }}{% endblock %}
+
+{% block content %}
+<div class="payment-container">
+    <!-- Breadcrumb -->
+    <div class="breadcrumb-section">
+        <a href="{% url 'mes_reservations' %}" class="breadcrumb-link">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M19 12H5M12 19l-7-7 7-7"/>
+            </svg>
+            Retour aux réservations
+        </a>
+    </div>
+
+    <div class="payment-layout">
+        <!-- Colonne gauche: Formulaire de paiement -->
+        <div class="payment-form-section">
+            <h1>Finaliser la réservation</h1>
+            
+            {% if messages %}
+            <div class="messages-container">
+                {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}">
+                    {{ message }}
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <form method="POST" action="{% url 'process_payment' reservation.id %}" id="paymentForm">
+                {% csrf_token %}
+                
+                <!-- Méthode de paiement -->
+                <div class="payment-method-selector">
+                    <h3>Méthode de paiement</h3>
+                    
+                    {% if payment_cards %}
+                    <!-- Cartes existantes -->
+                    <div class="payment-option">
+                        <input type="radio" name="payment_method" value="existing_card" id="existing_card" checked>
+                        <label for="existing_card">Utiliser une carte enregistrée</label>
+                    </div>
+                    
+                    <div id="existingCardsSection" class="cards-list">
+                        {% for card in payment_cards %}
+                        <div class="card-item {% if default_card and card.id == default_card.id %}default{% endif %}">
+                            <input type="radio" name="card_id" value="{{ card.id }}" id="card_{{ card.id }}" 
+                                   {% if default_card and card.id == default_card.id %}checked{% endif %}>
+                            <label for="card_{{ card.id }}">
+                                <div class="card-icon">
+                                    {% if card.type == 'Visa' %}💳
+                                    {% elif card.type == 'Mastercard' %}💳
+                                    {% else %}💳{% endif %}
+                                </div>
+                                <div class="card-info">
+                                    <strong>{{ card.type }} •••• {{ card.last_four }}</strong>
+                                    <span>Expire {{ card.expiry }}</span>
+                                </div>
+                                {% if default_card and card.id == default_card.id %}
+                                <span class="default-badge">Par défaut</span>
+                                {% endif %}
+                            </label>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Nouvelle carte -->
+                    <div class="payment-option">
+                        <input type="radio" name="payment_method" value="new_card" id="new_card" 
+                               {% if not payment_cards %}checked{% endif %}>
+                        <label for="new_card">Ajouter une nouvelle carte</label>
+                    </div>
+                    
+                    <div id="newCardSection" class="new-card-form" {% if payment_cards %}style="display: none;"{% endif %}>
+                        <div class="form-group">
+                            <label>Nom sur la carte</label>
+                            <input type="text" name="card_name" class="form-control" placeholder="Ex: Jean Dupont">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Numéro de carte</label>
+                            <input type="text" name="card_number" class="form-control" 
+                                   placeholder="1234 5678 9012 3456" maxlength="19" id="cardNumber">
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Date d'expiration</label>
+                                <input type="text" name="expiry" class="form-control" 
+                                       placeholder="MM/AA" maxlength="5" id="expiryDate">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>CVV</label>
+                                <input type="text" name="cvv" class="form-control" 
+                                       placeholder="123" maxlength="4" id="cvv">
+                            </div>
+                        </div>
+                        
+                        <div class="form-check">
+                            <input type="checkbox" name="save_card" id="save_card" class="form-check-input">
+                            <label for="save_card">Enregistrer cette carte pour plus tard</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn-pay">
+                    Payer {{ reservation.prix_total }}€
+                </button>
+            </form>
+        </div>
+
+        <!-- Colonne droite: Résumé de la réservation -->
+        <div class="reservation-summary">
+            <h3>Récapitulatif</h3>
+            
+            <div class="summary-card">
+                {% if reservation.espace.image %}
+                <img src="{{ reservation.espace.image.url }}" alt="{{ reservation.espace.nom }}">
+                {% endif %}
+                
+                <div class="summary-details">
+                    <h4>{{ reservation.espace.nom }}</h4>
+                    
+                    <div class="detail-item">
+                        <span class="label">📅 Date</span>
+                        <span class="value">{{ reservation.date|date:"d F Y" }}</span>
+                    </div>
+                    
+                    <div class="detail-item">
+                        <span class="label">⏰ Horaire</span>
+                        <span class="value">{{ reservation.heure_debut|time:"H:i" }} - {{ reservation.heure_fin|time:"H:i" }}</span>
+                    </div>
+                    
+                    <div class="detail-item">
+                        <span class="label">⏱️ Durée</span>
+                        <span class="value">{{ reservation.duree_heures }}h</span>
+                    </div>
+                    
+                    <div class="divider"></div>
+                    
+                    <div class="price-breakdown">
+                        <div class="price-item">
+                            <span>{{ reservation.espace.prix_par_heure }}€ × {{ reservation.duree_heures }}h</span>
+                            <span>{{ reservation.prix_total }}€</span>
+                        </div>
+                        
+                        <div class="divider"></div>
+                        
+                        <div class="price-total">
+                            <strong>Total</strong>
+                            <strong>{{ reservation.prix_total }}€</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="security-badge">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                </svg>
+                <span>Paiement sécurisé</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.payment-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+.breadcrumb-section {
+    margin-bottom: 2rem;
+}
+
+.breadcrumb-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #6c757d;
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: color 0.2s;
+}
+
+.breadcrumb-link:hover {
+    color: #1a1a1a;
+}
+
+.payment-layout {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr;
+    gap: 2rem;
+}
+
+.payment-form-section h1 {
+    font-size: 2rem;
+    font-weight: 400;
+    color: #1a1a1a;
+    margin-bottom: 2rem;
+}
+
+.messages-container {
+    margin-bottom: 1.5rem;
+}
+
+.alert {
+    padding: 1rem;
+    border-radius: 6px;
+    margin-bottom: 1rem;
+}
+
+.alert-error {
+    background: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+.payment-method-selector {
+    background: #ffffff;
+    border: 1px solid #e5e5e5;
+    border-radius: 8px;
+    padding: 2rem;
+    margin-bottom: 1.5rem;
+}
+
+.payment-method-selector h3 {
+    font-size: 1.1rem;
+    font-weight: 500;
+    margin-bottom: 1.5rem;
+}
+
+.payment-option {
+    margin-bottom: 1.5rem;
+}
+
+.payment-option input[type="radio"] {
+    margin-right: 0.5rem;
+}
+
+.payment-option label {
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.cards-list {
+    margin: 1rem 0 1.5rem 1.5rem;
+}
+
+.card-item {
+    background: #f8f9fa;
+    border: 2px solid #e5e5e5;
+    border-radius: 6px;
+    padding: 1rem;
+    margin-bottom: 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.card-item:hover {
+    border-color: #1a1a1a;
+}
+
+.card-item.default {
+    border-color: #28a745;
+}
+
+.card-item input[type="radio"] {
+    margin-right: 0.75rem;
+}
+
+.card-item label {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    cursor: pointer;
+    width: 100%;
+}
+
+.card-icon {
+    font-size: 1.5rem;
+}
+
+.card-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    flex: 1;
+}
+
+.card-info strong {
+    color: #1a1a1a;
+}
+
+.card-info span {
+    font-size: 0.85rem;
+    color: #6c757d;
+}
+
+.default-badge {
+    background: #28a745;
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 100px;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.new-card-form {
+    margin: 1rem 0 0 1.5rem;
+}
+
+.form-group {
+    margin-bottom: 1.25rem;
+}
+
+.form-group label {
+    display: block;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #1a1a1a;
+    margin-bottom: 0.5rem;
+}
+
+.form-control {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #e5e5e5;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    transition: border-color 0.2s;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: #1a1a1a;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.form-check {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+.form-check-input {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+}
+
+.btn-pay {
+    width: 100%;
+    padding: 1rem;
+    background: #1a1a1a;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-pay:hover {
+    background: #000000;
+    transform: translateY(-1px);
+}
+
+/* Résumé */
+.reservation-summary {
+    position: sticky;
+    top: 2rem;
+    height: fit-content;
+}
+
+.reservation-summary h3 {
+    font-size: 1.1rem;
+    font-weight: 500;
+    margin-bottom: 1rem;
+}
+
+.summary-card {
+    background: #ffffff;
+    border: 1px solid #e5e5e5;
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 1rem;
+}
+
+.summary-card img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+}
+
+.summary-details {
+    padding: 1.5rem;
+}
+
+.summary-details h4 {
+    font-size: 1.1rem;
+    font-weight: 500;
+    margin-bottom: 1rem;
+}
+
+.detail-item {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.75rem;
+}
+
+.detail-item .label {
+    color: #6c757d;
+    font-size: 0.9rem;
+}
+
+.detail-item .value {
+    color: #1a1a1a;
+    font-weight: 500;
+    font-size: 0.9rem;
+}
+
+.divider {
+    height: 1px;
+    background: #e5e5e5;
+    margin: 1rem 0;
+}
+
+.price-breakdown {
+    margin-top: 1rem;
+}
+
+.price-item {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+    color: #6c757d;
+    font-size: 0.9rem;
+}
+
+.price-total {
+    display: flex;
+    justify-content: space-between;
+    font-size: 1.1rem;
+    color: #1a1a1a;
+}
+
+.security-badge {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1rem;
+    background: #f8f9fa;
+    border-radius: 6px;
+    color: #6c757d;
+    font-size: 0.9rem;
+}
+
+@media (max-width: 968px) {
+    .payment-layout {
+        grid-template-columns: 1fr;
+    }
+    
+    .reservation-summary {
+        position: static;
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const existingCardRadio = document.getElementById('existing_card');
+    const newCardRadio = document.getElementById('new_card');
+    const existingCardsSection = document.getElementById('existingCardsSection');
+    const newCardSection = document.getElementById('newCardSection');
+    
+    // Gérer l'affichage des sections
+    function toggleSections() {
+        if (existingCardRadio && existingCardRadio.checked) {
+            if (existingCardsSection) existingCardsSection.style.display = 'block';
+            newCardSection.style.display = 'none';
+        } else if (newCardRadio.checked) {
+            if (existingCardsSection) existingCardsSection.style.display = 'none';
+            newCardSection.style.display = 'block';
+        }
+    }
+    
+    if (existingCardRadio) {
+        existingCardRadio.addEventListener('change', toggleSections);
+    }
+    newCardRadio.addEventListener('change', toggleSections);
+    
+    // Formatage du numéro de carte
+    const cardNumber = document.getElementById('cardNumber');
+    if (cardNumber) {
+        cardNumber.addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\s/g, '');
+            let formattedValue = value.match(/.{1,4}/g)?.join(' ') || value;
+            e.target.value = formattedValue;
+        });
+    }
+    
+    // Formatage de la date d'expiration
+    const expiryDate = document.getElementById('expiryDate');
+    if (expiryDate) {
+        expiryDate.addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length >= 2) {
+                value = value.substring(0, 2) + '/' + value.substring(2, 4);
+            }
+            e.target.value = value;
+        });
+    }
+    
+    // CVV: uniquement des chiffres
+    const cvv = document.getElementById('cvv');
+    if (cvv) {
+        cvv.addEventListener('input', function(e) {
+            e.target.value = e.target.value.replace(/\D/g, '');
+        });
+    }
+});
+</script>
+{% endblock %}

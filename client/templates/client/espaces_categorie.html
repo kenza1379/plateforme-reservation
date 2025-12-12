@@ -1,0 +1,259 @@
+{% extends "client/base.html" %}
+{% load static %}
+
+{% block title %}{{ categorie_nom }} - Point Pro{% endblock %}
+
+{% block content %}
+<!-- HEADER DE LA PAGE -->
+<div class="page-header">
+  <div class="container">
+    <h1>{{ categorie_nom }}</h1>
+    <p class="text-muted">{{ total }} espace{% if total > 1 %}s{% endif %} disponible{% if total > 1 %}s{% endif %}</p>
+    <a href="{% url 'accueil' %}" class="btn-back">← Retour à l'accueil</a>
+  </div>
+</div>
+
+<!-- LISTE DES ESPACES -->
+<section class="espaces-list-section py-5">
+  <div class="container">
+    {% if espaces %}
+      <div class="row g-4">
+        {% for espace in espaces %}
+        <div class="col-lg-4 col-md-6">
+          <div class="espace-card">
+            <div class="espace-card-img" style="position: relative;">
+              <a href="{% url 'detail_espace' espace.id %}">
+                {% if espace.image %}
+                  <img src="{{ espace.image.url }}" alt="{{ espace.nom }}">
+                {% else %}
+                  <img src="{% static 'client/images/default_espace.jpg' %}" alt="Espace">
+                {% endif %}
+              </a>
+              
+              <!-- Bouton favori sur l'image -->
+              {% if user.is_authenticated %}
+              <button class="favori-btn {% if espace.id in favoris_ids %}active{% endif %}" 
+                      data-espace-id="{{ espace.id }}" 
+                      title="{% if espace.id in favoris_ids %}Retirer des favoris{% else %}Ajouter aux favoris{% endif %}">
+                  <svg width="24" height="24" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" 
+                       fill="{% if espace.id in favoris_ids %}currentColor{% else %}none{% endif %}">
+                      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                  </svg>
+              </button>
+              {% endif %}
+            </div>
+            <div class="espace-card-body">
+              <h3 class="espace-title">{{ espace.nom }}</h3>
+              <div class="espace-location">
+                <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                  <path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10zm0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6z"/>
+                </svg>
+                {{ espace.ville }}
+              </div>
+              <div class="espace-capacity">👥 Jusqu'à {{ espace.capacite }} personnes</div>
+              
+              <div class="espace-features">
+                {% if espace.equipements_list %}
+                  {% for equipement in espace.equipements_list %}
+                    <span class="feature-tag">{{ equipement }}</span>
+                  {% endfor %}
+                {% else %}
+                  <span class="feature-tag text-muted">Aucun équipement</span>
+                {% endif %}
+              </div>
+              
+              <div class="espace-footer">
+                <div class="espace-price">{{ espace.prix_par_heure }}€ <span>/heure</span></div>
+                <a href="{% url 'detail_espace' espace.id %}" class="btn-voir">Voir détails</a>
+              </div>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="text-center py-5">
+        <p class="text-muted fs-5">Aucun espace disponible dans cette catégorie pour le moment.</p>
+        <a href="{% url 'accueil' %}" class="btn btn-primary mt-3">Retour à l'accueil</a>
+      </div>
+    {% endif %}
+  </div>
+</section>
+
+<style>
+.page-header {
+  background: linear-gradient(135deg, #d1d1d1 0%, #f5f4f7 100%);
+  color: white;
+  padding: 80px 0 60px;
+  margin-bottom: 50px;
+}
+
+.page-header h1 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+
+.page-header .text-muted {
+  color: rgba(255, 255, 255, 0.8) !important;
+  font-size: 1.1rem;
+}
+
+.btn-back {
+  display: inline-block;
+  margin-top: 20px;
+  color: white;
+  text-decoration: none;
+  font-weight: 500;
+  transition: opacity 0.3s;
+}
+
+.btn-back:hover {
+  opacity: 0.8;
+  color: white;
+}
+
+/* Styles pour le bouton favori */
+.favori-btn {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.95);
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    z-index: 10;
+}
+
+.favori-btn:hover {
+    transform: scale(1.1);
+    background: #ffffff;
+}
+
+.favori-btn svg {
+    color: #dc3545;
+    transition: all 0.2s ease;
+}
+
+.favori-btn.active svg {
+    fill: currentColor;
+}
+
+.favori-btn:hover svg {
+    transform: scale(1.1);
+}
+
+.favori-btn.animating {
+    animation: heartBeat 0.3s ease;
+}
+
+@keyframes heartBeat {
+    0%, 100% { transform: scale(1); }
+    25% { transform: scale(1.2); }
+    50% { transform: scale(0.95); }
+}
+
+.favori-notification {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    background: #1a1a1a;
+    color: white;
+    padding: 1rem 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    z-index: 9999;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.3s ease;
+}
+
+.favori-notification.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+</style>
+
+<!-- JavaScript pour le bouton favori -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const favoriBtns = document.querySelectorAll('.favori-btn');
+    
+    favoriBtns.forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const espaceId = this.dataset.espaceId;
+            const svg = this.querySelector('svg');
+            
+            fetch(`/toggle-favori/${espaceId}/`, {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRFToken': getCookie('csrftoken')
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    this.classList.add('animating');
+                    
+                    setTimeout(() => {
+                        if (data.is_favorite) {
+                            this.classList.add('active');
+                            svg.setAttribute('fill', 'currentColor');
+                            this.title = 'Retirer des favoris';
+                        } else {
+                            this.classList.remove('active');
+                            svg.setAttribute('fill', 'none');
+                            this.title = 'Ajouter aux favoris';
+                        }
+                        
+                        this.classList.remove('animating');
+                    }, 200);
+                    
+                    showNotification(data.message);
+                }
+            })
+            .catch(error => console.error('Erreur:', error));
+        });
+    });
+    
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    
+    function showNotification(message) {
+        const notif = document.createElement('div');
+        notif.className = 'favori-notification';
+        notif.textContent = message;
+        document.body.appendChild(notif);
+        
+        setTimeout(() => notif.classList.add('show'), 10);
+        setTimeout(() => {
+            notif.classList.remove('show');
+            setTimeout(() => notif.remove(), 300);
+        }, 2000);
+    }
+});
+</script>
+{% endblock %}

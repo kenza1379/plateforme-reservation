@@ -1,0 +1,162 @@
+
+<!-- ========================= -->
+<!-- MODAL : NOM / PRÉNOM -->
+<!-- ========================= -->
+<div id="nameModal" class="modal-custom">
+    <div class="modal-content">
+        <h2>Modifier le nom</h2>
+        <form method="post">
+            {% csrf_token %}
+
+            <label>Prénom</label>
+            <input type="text" name="first_name" value="{{ user.first_name }}" class="form-control mb-2">
+
+            <label>Nom</label>
+            <input type="text" name="last_name" value="{{ user.last_name }}" class="form-control mb-3">
+
+            <div class="modal-actions">
+                <button type="submit" class="btn btn-primary-custom">Enregistrer</button>
+                <button type="button" class="btn btn-cancel" onclick="closeModal('nameModal')">Annuler</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- ========================= -->
+<!-- MODAL : NOM PUBLIC -->
+<!-- ========================= -->
+<div id="publicNameModal" class="modal-custom">
+    <div class="modal-content">
+        <h2>Nom public</h2>
+        <form method="post">
+            {% csrf_token %}
+            <input type="text" name="public_name" value="{{ user.profile.public_name }}" class="form-control mb-3">
+
+            <div class="modal-actions">
+                <button type="submit" class="btn btn-primary-custom">Enregistrer</button>
+                <button type="button" class="btn btn-cancel" onclick="closeModal('publicNameModal')">Annuler</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- ========================= -->
+<!-- MODAL : EMAIL -->
+<!-- ========================= -->
+<div id="emailModal" class="modal-custom">
+    <div class="modal-content">
+        <h2>Modifier l'email</h2>
+        <form method="post">
+            {% csrf_token %}
+            <input type="email" name="email" value="{{ user.email }}" class="form-control mb-3">
+
+            <div class="modal-actions">
+                <button type="submit" class="btn btn-primary-custom">Enregistrer</button>
+                <button type="button" class="btn btn-cancel" onclick="closeModal('emailModal')">Annuler</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- ========================= -->
+<!-- MODAL : TÉLÉPHONE -->
+<!-- ========================= -->
+<div id="phoneModal" class="modal-custom">
+    <div class="modal-content">
+        <h2>Modifier le téléphone</h2>
+        <form method="post">
+            {% csrf_token %}
+            <input type="tel" name="phone" value="{{ user.profile.phone }}" class="form-control mb-3">
+
+            <div class="modal-actions">
+                <button type="submit" class="btn btn-primary-custom">Enregistrer</button>
+                <button type="button" class="btn btn-cancel" onclick="closeModal('phoneModal')">Annuler</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- ========================= -->
+<!-- MODAL : DATE DE NAISSANCE -->
+<!-- ========================= -->
+<div id="birthDateModal" class="modal-custom">
+    <div class="modal-content">
+        <h2>Date de naissance</h2>
+        <form method="post">
+            {% csrf_token %}
+            <input type="date" name="birth_date" value="{{ user.profile.birth_date }}" class="form-control mb-3">
+
+            <div class="modal-actions">
+                <button type="submit" class="btn btn-primary-custom">Enregistrer</button>
+                <button type="button" class="btn btn-cancel" onclick="closeModal('birthDateModal')">Annuler</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- ========================= -->
+<!-- MODAL : NATIONALITÉ -->
+<!-- ========================= -->
+<div id="nationalityModal" class="modal-custom">
+    <div class="modal-content">
+        <h2>Nationalité</h2>
+        <form method="post">
+            {% csrf_token %}
+            <input type="text" name="nationality" value="{{ user.profile.nationality }}" class="form-control mb-3">
+
+            <div class="modal-actions">
+                <button type="submit" class="btn btn-primary-custom">Enregistrer</button>
+                <button type="button" class="btn btn-cancel" onclick="closeModal('nationalityModal')">Annuler</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- ========================= -->
+<!-- MODAL : GENRE -->
+<!-- ========================= -->
+<div id="genderModal" class="modal-custom">
+    <div class="modal-content">
+        <h2>Genre</h2>
+        <form method="post">
+            {% csrf_token %}
+            <select name="gender" class="form-control mb-3">
+                <option value="">Sélectionner</option>
+                <option value="M" {% if user.profile.gender == "M" %}selected{% endif %}>Homme</option>
+                <option value="F" {% if user.profile.gender == "F" %}selected{% endif %}>Femme</option>
+                <option value="O" {% if user.profile.gender == "O" %}selected{% endif %}>Autre</option>
+            </select>
+
+            <div class="modal-actions">
+                <button type="submit" class="btn btn-primary-custom">Enregistrer</button>
+                <button type="button" class="btn btn-cancel" onclick="closeModal('genderModal')">Annuler</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- ========================= -->
+<!-- MODAL : ADRESSE -->
+<!-- ========================= -->
+<div id="addressModal" class="modal-custom">
+    <div class="modal-content">
+        <h2>Adresse complète</h2>
+        <form method="post">
+            {% csrf_token %}
+
+            <label>Adresse</label>
+            <input type="text" name="address" value="{{ user.profile.address }}" class="form-control mb-2">
+
+            <label>Code postal</label>
+            <input type="text" name="postal_code" value="{{ user.profile.postal_code }}" class="form-control mb-2">
+
+            <label>Ville</label>
+            <input type="text" name="city" value="{{ user.profile.city }}" class="form-control mb-3">
+
+            <div class="modal-actions">
+                <button type="submit" class="btn btn-primary-custom">Enregistrer</button>
+                <button type="button" class="btn btn-cancel" onclick="closeModal('addressModal')">Annuler</button>
+            </div>
+        </form>
+    </div>
+</div>

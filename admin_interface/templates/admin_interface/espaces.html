@@ -1,0 +1,66 @@
+{% extends 'admin_interface/base_admin.html' %}
+
+{% block title %}Gestion des Espaces{% endblock %}
+
+{% block content %}
+
+<div class="container">
+    <!-- ========== TITRE ET BOUTON AJOUTER ========== -->
+    <div class="flex-between" style="margin: 40px 0 30px 0;">
+        <h1 style="margin: 0;">🏢 Gestion des Espaces</h1>
+        <a href="{% url 'admin_interface:espace_create' %}" class="btn btn-add">Ajouter un espace</a>
+    </div>
+
+    <!-- ========== TABLEAU DES ESPACES ========== -->
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Nom</th>
+                    <th>Type</th>
+                    <th>Capacité</th>
+                    <th>Ville</th>
+                    <th>Prix / h</th>
+                    <th>Statut</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for espace in espaces %}
+                <tr>
+                    <td><strong>{{ espace.nom }}</strong></td>
+                    <td>{{ espace.get_type_espace_display }}</td>
+                    <td>{{ espace.capacite }} personnes</td>
+                    <td>{{ espace.ville }}</td>
+                    <td>{{ espace.prix_par_heure }} €</td>
+                    <td>
+                        {% if espace.disponible %}
+                            <span class="status-badge status-disponible">Disponible</span>
+                        {% else %}
+                            <span class="status-badge status-maintenance">Indisponible</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div class="action-buttons">
+                            <a href="{% url 'admin_interface:espace_update' espace.id %}" class="btn btn-secondary">✏️ Modifier</a>
+                            <a href="{% url 'admin_interface:espace_delete' espace.id %}" 
+                               class="btn btn-danger" 
+                               onclick="return confirm('Êtes-vous sûr de vouloir supprimer cet espace ?')">
+                                🗑️ Supprimer
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="text-center" style="padding: 40px; color: #999;">
+                        Aucun espace trouvé. Commencez par en ajouter un !
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% endblock %}

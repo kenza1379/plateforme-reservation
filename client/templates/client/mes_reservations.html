@@ -1,0 +1,701 @@
+{% extends "client/base.html" %}
+
+{% block title %}Mes Réservations{% endblock %}
+
+{% block content %}
+<div class="reservations-container">
+    <!-- En-tête minimaliste -->
+    <div class="header-section">
+        <h1>Mes Réservations</h1>
+        <p>{{ total_count }} réservation{% if total_count > 1 %}s{% endif %}</p>
+        <a href="{% url 'accueil' %}" class="btn-back">← Retour à l'accueil</a>
+    </div>
+
+
+    <!-- Filtres épurés -->
+    <div class="filters-section">
+        <button class="filter-pill active" data-filter="all">
+            Toutes <span>{{ total_count }}</span>
+        </button>
+        <button class="filter-pill" data-filter="confirmee">
+            Confirmées <span>{{ confirmee_count }}</span>
+        </button>
+        <button class="filter-pill" data-filter="en_attente">
+            En attente <span>{{ en_attente_count }}</span>
+        </button>
+        <button class="filter-pill" data-filter="annulee">
+            Annulées <span>{{ annulee_count }}</span>
+        </button>
+    </div>
+
+    {% if reservations %}
+        <div class="reservations-grid">
+            {% for reservation in reservations %}
+            <div class="reservation-item" data-status="{{ reservation.status }}">
+                <!-- Image -->
+                <div class="reservation-image-wrapper">
+                    {% if reservation.espace.image %}
+                        <img src="{{ reservation.espace.image.url }}" alt="{{ reservation.espace.nom }}">
+                    {% else %}
+                        <div class="image-placeholder">
+                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                                <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                            </svg>
+                        </div>
+                    {% endif %}
+                    <div class="status-indicator status-{{ reservation.status }}"></div>
+                </div>
+
+                <!-- Contenu -->
+                <div class="reservation-body">
+                    <div class="reservation-header">
+                        <div>
+                            <h3>{{ reservation.espace.nom }}</h3>
+                            <span class="price">{{ reservation.prix_total }}€</span>
+                        </div>
+                    </div>
+
+                    <div class="reservation-meta">
+                        <div class="meta-item">
+                            <span class="label">Date</span>
+                            <span class="value">{{ reservation.date|date:"d.m.Y" }}</span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="label">Horaire</span>
+                            <span class="value">{{ reservation.heure_debut|time:"H:i" }} - {{ reservation.heure_fin|time:"H:i" }}</span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="label">Durée</span>
+                            <span class="value">{{ reservation.duree_heures }}h</span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="label">Statut</span>
+                            <span class="value status-text-{{ reservation.status }}">
+                                {% if reservation.status == 'confirmee' %}Confirmée
+                                {% elif reservation.status == 'en_attente' %}En attente
+                                {% elif reservation.status == 'annulee' %}Annulée
+                                {% else %}{{ reservation.get_status_display }}{% endif %}
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="reservation-footer">
+                        <a href="{% url 'reservation_detail' reservation.id %}" class="btn-link">Détails</a>
+                        {% if reservation.status == 'en_attente' or reservation.status == 'confirmee' %}
+                        <button class="btn-cancel" data-target="#cancelModal{{ reservation.id }}">
+                            Annuler
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal -->
+            <div class="modal fade" id="cancelModal{{ reservation.id }}" tabindex="-1">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content modal-minimal">
+                        <div class="modal-header">
+                            <h5>Annuler la réservation</h5>
+                            <button type="button" class="btn-close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p>Cette action est irréversible. Êtes-vous certain de vouloir annuler ?</p>
+                            <div class="cancel-summary">
+                                <strong>{{ reservation.espace.nom }}</strong>
+                                <span>{{ reservation.date|date:"d F Y" }} · {{ reservation.heure_debut|time:"H:i" }}</span>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn-ghost">Conserver</button>
+                            <form method="post" action="{% url 'cancel_reservation' reservation.id %}" style="display: inline;">
+                                {% csrf_token %}
+                                <button type="submit" class="btn-delete">Annuler la réservation</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="16" y1="2" x2="16" y2="6"></line>
+                <line x1="8" y1="2" x2="8" y2="6"></line>
+                <line x1="3" y1="10" x2="21" y2="10"></line>
+            </svg>
+            <h3>Aucune réservation</h3>
+            <p>Commencez par explorer nos espaces disponibles</p>
+            <a href="{% url 'accueil' %}" class="btn-primary">Explorer les espaces</a>
+        </div>
+    {% endif %}
+</div>
+
+<style>
+* {
+    box-sizing: border-box;
+}
+
+.reservations-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 4rem 2rem;
+}
+
+/* En-tête */
+.header-section {
+    margin-bottom: 3rem;
+}
+
+.header-section h1 {
+    font-size: 2.5rem;
+    font-weight: 400;
+    color: #1a1a1a;
+    margin-bottom: 0.5rem;
+    letter-spacing: -0.02em;
+}
+
+.header-section p {
+    font-size: 0.95rem;
+    color: #6c757d;
+    font-weight: 300;
+}
+
+.btn-back {
+  display: inline-block;
+  margin-top: 20px;
+  color: rgb(0, 0, 0);
+  text-decoration: none;
+  font-weight: 500;
+  transition: opacity 0.3s;
+}
+
+.btn-back:hover {
+  opacity: 0.8;
+  color: rgb(0, 0, 0);
+}
+
+/* Filtres */
+.filters-section {
+    display: flex;
+    gap: 0.75rem;
+    margin-bottom: 3rem;
+    flex-wrap: wrap;
+}
+
+.filter-pill {
+    background: #ffffff;
+    border: 1px solid #e5e5e5;
+    padding: 0.5rem 1.25rem;
+    border-radius: 100px;
+    font-size: 0.9rem;
+    color: #1a1a1a;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-weight: 400;
+}
+
+.filter-pill span {
+    display: inline-block;
+    background: #F3ECE3;
+    color: #1a1a1a;
+    padding: 0.15rem 0.5rem;
+    border-radius: 100px;
+    margin-left: 0.5rem;
+    font-size: 0.85rem;
+}
+
+.filter-pill:hover {
+    border-color: #1a1a1a;
+}
+
+.filter-pill.active {
+    background: #1a1a1a;
+    color: #ffffff;
+    border-color: #1a1a1a;
+}
+
+.filter-pill.active span {
+    background: rgba(255,255,255,0.2);
+    color: #ffffff;
+}
+
+/* Grille de réservations */
+.reservations-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+    gap: 1.5rem;
+}
+
+.reservation-item {
+    background: #ffffff;
+    border: 1px solid #e5e5e5;
+    border-radius: 8px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.reservation-item:hover {
+    box-shadow: 0 8px 24px rgba(0,0,0,0.06);
+    transform: translateY(-2px);
+}
+
+.reservation-image-wrapper {
+    position: relative;
+    width: 100%;
+    height: 200px;
+    background: #F3ECE3;
+}
+
+.reservation-image-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.image-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #6c757d;
+}
+
+.status-indicator {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 2px solid #ffffff;
+}
+
+.status-indicator.status-confirmee {
+    background: #28a745;
+}
+
+.status-indicator.status-en_attente {
+    background: #ffc107;
+}
+
+.status-indicator.status-annulee {
+    background: #dc3545;
+}
+
+/* Corps de la carte */
+.reservation-body {
+    padding: 1.5rem;
+}
+
+.reservation-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1.5rem;
+}
+
+.reservation-header h3 {
+    font-size: 1.25rem;
+    font-weight: 500;
+    color: #1a1a1a;
+    margin: 0;
+    letter-spacing: -0.01em;
+}
+
+.price {
+    font-size: 1.5rem;
+    font-weight: 300;
+    color: #1a1a1a;
+    white-space: nowrap;
+}
+
+/* Meta informations */
+.reservation-meta {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.meta-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.meta-item .label {
+    font-size: 0.75rem;
+    color: #6c757d;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 500;
+}
+
+.meta-item .value {
+    font-size: 0.95rem;
+    color: #1a1a1a;
+}
+
+.status-text-confirmee {
+    color: #28a745;
+}
+
+.status-text-en_attente {
+    color: #ffc107;
+}
+
+.status-text-annulee {
+    color: #dc3545;
+}
+
+/* Footer */
+.reservation-footer {
+    display: flex;
+    gap: 1rem;
+}
+
+.btn-link {
+    flex: 1;
+    padding: 0.75rem;
+    background: #1a1a1a;
+    color: #ffffff !important;
+    text-align: center;
+    text-decoration: none;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.btn-link:hover {
+    background: #000000;
+    transform: translateY(-1px);
+}
+
+.btn-cancel {
+    padding: 0.75rem 1.5rem;
+    background: transparent;
+    color: #1a1a1a;
+    border: 1px solid #e5e5e5;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-cancel:hover {
+    background: #F3ECE3;
+    border-color: #F3ECE3;
+}
+
+/* Modal minimaliste */
+.modal-minimal {
+    border: none;
+    border-radius: 12px;
+}
+
+.modal-minimal .modal-header {
+    border: none;
+    padding: 2rem 2rem 1rem;
+}
+
+.modal-minimal .modal-header h5 {
+    font-size: 1.25rem;
+    font-weight: 500;
+    color: #1a1a1a;
+}
+
+.modal-minimal .modal-body {
+    padding: 0 2rem 1.5rem;
+}
+
+.modal-minimal .modal-body p {
+    color: #6c757d;
+    margin-bottom: 1.5rem;
+    font-size: 0.95rem;
+}
+
+.cancel-summary {
+    background: #F3ECE3;
+    padding: 1rem;
+    border-radius: 6px;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.cancel-summary strong {
+    color: #1a1a1a;
+    font-weight: 500;
+}
+
+.cancel-summary span {
+    color: #6c757d;
+    font-size: 0.9rem;
+}
+
+.modal-minimal .modal-footer {
+    border: none;
+    padding: 0 2rem 2rem;
+    gap: 0.75rem;
+}
+
+.btn-ghost {
+    padding: 0.75rem 1.5rem;
+    background: transparent;
+    color: #1a1a1a;
+    border: 1px solid #e5e5e5;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-ghost:hover {
+    background: #F3ECE3;
+}
+
+.btn-delete {
+    padding: 0.75rem 1.5rem;
+    background: #dc3545;
+    color: #ffffff;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-delete:hover {
+    background: #c82333;
+}
+
+/* Modal backdrop - IMPORTANT: En dehors du media query */
+.modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1040;
+    width: 100vw;
+    height: 100vh;
+    background-color: #000;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.modal-backdrop.show {
+    opacity: 0.5;
+}
+
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1050;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    outline: 0;
+    display: none;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.modal.show {
+    opacity: 1;
+}
+
+.modal-dialog {
+    position: relative;
+    width: auto;
+    margin: 1.75rem auto;
+    max-width: 500px;
+}
+
+body.modal-open {
+    overflow: hidden;
+}
+
+/* État vide */
+.empty-state {
+    text-align: center;
+    padding: 5rem 2rem;
+    background: #ffffff;
+    border: 1px solid #e5e5e5;
+    border-radius: 8px;
+}
+
+.empty-state svg {
+    color: #6c757d;
+    margin-bottom: 1.5rem;
+}
+
+.empty-state h3 {
+    font-size: 1.5rem;
+    font-weight: 400;
+    color: #1a1a1a;
+    margin-bottom: 0.5rem;
+}
+
+.empty-state p {
+    color: #6c757d;
+    margin-bottom: 2rem;
+    font-size: 0.95rem;
+}
+
+.btn-primary {
+    display: inline-block;
+    padding: 0.875rem 2rem;
+    background: #1a1a1a;
+    color: #ffffff;
+    text-decoration: none;
+    border-radius: 6px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.btn-primary:hover {
+    background: #000000;
+    transform: translateY(-1px);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .reservations-container {
+        padding: 2rem 1rem;
+    }
+    
+    .header-section h1 {
+        font-size: 2rem;
+    }
+    
+    .reservations-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .reservation-footer {
+        flex-direction: column;
+    }
+    
+    .btn-cancel {
+        width: 100%;
+    }
+}
+
+/* Animations */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.reservation-item {
+    animation: fadeInUp 0.4s ease forwards;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Gestion des filtres
+    const filterButtons = document.querySelectorAll('.filter-pill');
+    const reservationItems = document.querySelectorAll('.reservation-item');
+    
+    filterButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            filterButtons.forEach(btn => btn.classList.remove('active'));
+            this.classList.add('active');
+            
+            const filter = this.dataset.filter;
+            
+            reservationItems.forEach(item => {
+                if (filter === 'all' || item.dataset.status === filter) {
+                    item.style.display = 'block';
+                    setTimeout(() => {
+                        item.style.opacity = '1';
+                        item.style.transform = 'translateY(0)';
+                    }, 10);
+                } else {
+                    item.style.opacity = '0';
+                    item.style.transform = 'translateY(10px)';
+                    setTimeout(() => {
+                        item.style.display = 'none';
+                    }, 300);
+                }
+            });
+        });
+    });
+
+    // Gestion des modals
+    const cancelButtons = document.querySelectorAll('.btn-cancel');
+    
+    cancelButtons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            const modalId = this.getAttribute('data-target');
+            const modal = document.querySelector(modalId);
+            openModal(modal);
+        });
+    });
+    
+    // Gérer les boutons de fermeture et "Conserver"
+    document.querySelectorAll('.btn-close, .btn-ghost').forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            const modal = this.closest('.modal');
+            closeModal(modal);
+        });
+    });
+    
+    function openModal(modal) {
+        if (!modal) return;
+        
+        // Créer le backdrop
+        const backdrop = document.createElement('div');
+        backdrop.className = 'modal-backdrop fade';
+        backdrop.setAttribute('data-modal-id', modal.id);
+        document.body.appendChild(backdrop);
+        
+        // Afficher le modal
+        modal.style.display = 'block';
+        setTimeout(() => {
+            modal.classList.add('show');
+            backdrop.classList.add('show');
+            document.body.classList.add('modal-open');
+        }, 10);
+        
+        // Fermer en cliquant sur le backdrop
+        backdrop.addEventListener('click', function() {
+            closeModal(modal);
+        });
+    }
+    
+    function closeModal(modal) {
+        if (!modal) return;
+        
+        const backdrop = document.querySelector(`.modal-backdrop[data-modal-id="${modal.id}"]`);
+        
+        modal.classList.remove('show');
+        if (backdrop) {
+            backdrop.classList.remove('show');
+        }
+        
+        setTimeout(() => {
+            modal.style.display = 'none';
+            if (backdrop && backdrop.parentNode) {
+                document.body.removeChild(backdrop);
+            }
+            document.body.classList.remove('modal-open');
+        }, 300);
+    }
+});
+</script>
+{% endblock %}

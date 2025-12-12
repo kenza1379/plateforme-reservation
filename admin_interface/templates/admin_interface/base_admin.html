@@ -1,0 +1,224 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Interface Admin{% endblock %} - Gestion des Salles</title>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="{% static 'admin_interface/style.css' %}">
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: #f5f7fa;
+            padding-top: 70px;
+        }
+
+        /* ========== NAVBAR MODERNE ========== */
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+        }
+
+        .navbar {
+            padding: 0;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        .flex-between {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            min-height: 70px;
+        }
+
+        .navbar-brand {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: white;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: transform 0.3s ease;
+        }
+
+        .navbar-brand:hover {
+            transform: scale(1.05);
+        }
+
+        .navbar-nav {
+            display: flex;
+            list-style: none;
+            gap: 0.5rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .navbar-nav li a {
+            color: rgba(255, 255, 255, 0.9);
+            text-decoration: none;
+            padding: 0.6rem 1rem;
+            border-radius: 8px;
+            font-weight: 500;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            display: block;
+            white-space: nowrap;
+        }
+
+        .navbar-nav li a:hover {
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .navbar-nav li a.active {
+            background: rgba(255, 255, 255, 0.25);
+            color: white;
+            font-weight: 600;
+        }
+
+        /* ========== MAIN CONTENT ========== */
+        main {
+            min-height: calc(100vh - 170px);
+            padding: 2rem 0;
+        }
+
+        /* ========== FOOTER ========== */
+        footer {
+            background: #2d3748;
+            color: white;
+            padding: 2rem 0;
+            text-align: center;
+            margin-top: 3rem;
+        }
+
+        footer p {
+            margin: 0.5rem 0;
+            opacity: 0.8;
+        }
+
+        /* ========== RESPONSIVE ========== */
+        @media (max-width: 1200px) {
+            .navbar-nav {
+                gap: 0.3rem;
+            }
+
+            .navbar-nav li a {
+                padding: 0.5rem 0.8rem;
+                font-size: 0.85rem;
+            }
+        }
+
+        @media (max-width: 992px) {
+            .flex-between {
+                flex-direction: column;
+                gap: 1rem;
+                padding: 1rem 0;
+            }
+
+            .navbar-nav {
+                justify-content: center;
+            }
+
+            body {
+                padding-top: 140px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .navbar-nav {
+                gap: 0.5rem;
+            }
+
+            .navbar-nav li a {
+                padding: 0.5rem 0.7rem;
+                font-size: 0.8rem;
+            }
+
+            .container {
+                padding: 0 1rem;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .navbar-brand {
+                font-size: 1.2rem;
+            }
+
+            .navbar-nav li a {
+                padding: 0.4rem 0.6rem;
+                font-size: 0.75rem;
+            }
+        }
+    </style>
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+    <!-- ========== NAVBAR MODERNE ========== -->
+    <header>
+        <nav class="navbar">
+            <div class="container flex-between">
+                <a href="{% url 'admin_interface:dashboard' %}" class="navbar-brand">
+                    🏢 Admin Panel
+                </a>
+                
+                <ul class="navbar-nav">
+                    <li><a href="{% url 'admin_interface:dashboard' %}" class="{% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">Dashboard</a></li>
+                    <li><a href="{% url 'admin_interface:espace_list' %}" class="{% if 'salle' in request.resolver_match.url_name %}active{% endif %}">Salles</a></li>
+                    <li><a href="{% url 'admin_interface:reservation_list' %}" class="{% if 'reservation' in request.resolver_match.url_name %}active{% endif %}">Réservations</a></li>
+                    <li><a href="{% url 'admin_interface:client_list' %}" class="{% if 'client' in request.resolver_match.url_name %}active{% endif %}">Clients</a></li>
+                    <li><a href="{% url 'admin_interface:technicien_list' %}" class="{% if 'technicien' in request.resolver_match.url_name %}active{% endif %}">Techniciens</a></li>
+                    <li><a href="{% url 'admin_interface:interventions_suivi' %}">Interventions</a></li>
+                    <li><a href="{% url 'admin_interface:statistiques' %}" class="{% if 'statistiques' in request.resolver_match.url_name %}active{% endif %}">Statistiques</a></li>
+                    <li><a href="{% url 'admin_interface:logout_admin' %}" style="background: rgba(239, 68, 68, 0.2);">Déconnexion</a></li>
+                </ul>
+            </div>
+        </nav>
+    </header>
+
+    <!-- ========== CONTENU PRINCIPAL ========== -->
+    <main>
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <!-- ========== FOOTER ========== -->
+    <footer>
+        <div class="container">
+            <p>&copy; 2024 Système de Réservation de Salles - Interface Administrateur</p>
+            <p>Développé avec Django & Poppins Design</p>
+        </div>
+    </footer>
+
+    {% block extra_js %}{% endblock %}
+
+</body>
+</html>

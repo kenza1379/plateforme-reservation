@@ -1,0 +1,40 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Technicien - {% block title %}{% endblock %}</title>
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="{% static 'style_tech.css' %}">
+</head>
+<body>
+
+<nav class="navbar">
+    <div class="navbar-nav">
+        <a href="{% url 'tech_interface:dashboard' %}" {% if request.resolver_match.url_name == 'dashboard' %}class="active"{% endif %}>Dashboard</a>
+        <a href="{% url 'tech_interface:salles_status' %}" {% if request.resolver_match.url_name == 'salles_status' %}class="active"{% endif %}>État des salles</a>
+        <a href="{% url 'tech_interface:incidents_list' %}" {% if request.resolver_match.url_name == 'incidents_list' or request.resolver_match.url_name == 'incident_create' %}class="active"{% endif %}>Incidents</a>
+    </div>
+    <div class="navbar-nav">
+        <a href="{% url 'logout' %}">Déconnexion</a>
+    </div>
+</nav>
+
+{% block content %}{% endblock %}
+
+<footer>
+    <p>&copy; 2024 Système de Réservation de Salles - Interface Technicien</p>
+</footer>
+
+<style>
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+</style>
+
+</body>
+</html>

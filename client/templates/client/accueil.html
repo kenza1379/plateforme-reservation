@@ -1,0 +1,458 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Accueil - Point Pro</title>
+
+  <!-- Bootstrap -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <!-- Ton fichier CSS -->
+  <link rel="stylesheet" href="{% static 'client/style.css' %}">
+</head>
+
+<body>
+  <!-- 🌐 Barre de navigation -->
+  <nav class="navbar navbar-expand-lg navbar-light bg-white py-3 shadow-sm fixed-top">
+    <div class="container">
+      <!-- Logo -->
+      <a class="navbar-brand fw-bold fs-4" href="{% url 'accueil' %}">Point Pro</a>
+
+      <!-- Menu mobile -->
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <!-- Liens -->
+      <div class="collapse navbar-collapse justify-content-end" id="mainNav">
+        <ul class="navbar-nav align-items-center">
+          <li class="nav-item mx-2">
+            {% if user.is_authenticated %}
+              <div class="dropdown">
+                <button class="btn btn-dark rounded-pill px-4 py-2 dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                  Bonjour, {{ user.first_name }}
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end">
+                  <li><a class="dropdown-item" href="{% url 'mon_compte' %}">Mon compte</a></li>
+                  <li><a class="dropdown-item" href="{% url 'mes_reservations' %}">Mes réservations</a></li>
+                  <li><a class="dropdown-item" href="{% url 'mes_favoris' %}">Mes favoris</a></li>
+                  <li><hr class="dropdown-divider"></li>
+                  <li><a class="dropdown-item logout" href="{% url 'logout' %}">Se déconnecter</a></li>
+                </ul>              
+              </div>
+            {% else %}
+              <a href="{% url 'login' %}" class="btn btn-dark rounded-pill px-4 py-2">Connexion</a>
+              <a href="{% url 'signup' %}" class="btn btn-dark2 rounded-pill px-4 py-2">S'inscrire</a>
+            {% endif %}
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- 🌅 Hero section -->
+  <section class="hero text-center text-white d-flex align-items-center justify-content-center">
+    <div>
+      <h1>Réservez vos espaces en toute simplicité</h1>
+      <p>Trouvez la salle parfaite pour vos réunions, événements ou coworking à Paris, Lille, Toulouse, Strasbourg, Rennes.</p>
+
+    </div>
+  </section>
+
+ <!-- SEARCH BOX -->
+<section class="search-section py-5">
+  <div class="container">
+    <div class="search-box">
+      <form method="GET" action="{% url 'accueil' %}" class="row g-4 align-items-end">
+        
+        <!-- Localisation -->
+        <div class="col-md-3">
+          <label class="form-label">Localisation</label>
+          <div class="search-input-group">
+            <span class="search-icon">
+              <svg width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+                <path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10zm0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6z"/>
+              </svg>
+            </span>
+            <input 
+              type="text" 
+              name="ville" 
+              placeholder="Paris, Lille, Toulouse..."
+              value="{{ request.GET.ville }}"
+            >
+          </div>
+        </div>
+
+        <!-- Type d'espace -->
+        <div class="col-md-3">
+          <label class="form-label">Type d'espace</label>
+          <div class="search-input-group">
+            <span class="search-icon">
+              <svg width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+                <path d="M2.5.5A.5.5 0 0 1 3 0h10a.5.5 0 0 1 .5.5c0 .538-.012 1.05-.034 1.536a3 3 0 1 1-1.133 5.89c-.79 1.865-1.878 2.777-2.833 3.011v2.173l1.425.356c.194.048.377.135.537.255L13.3 15.1a.5.5 0 0 1-.3.9H3a.5.5 0 0 1-.3-.9l1.838-1.379c.16-.12.343-.207.537-.255L6.5 13.11v-2.173c-.955-.234-2.043-1.146-2.833-3.012a3 3 0 1 1-1.132-5.89A33.076 33.076 0 0 1 2.5.5zm.099 2.54a2 2 0 0 0 .72 3.935c-.333-1.05-.588-2.346-.72-3.935zm10.083 3.935a2 2 0 0 0 .72-3.935c-.133 1.59-.388 2.885-.72 3.935z"/>
+              </svg>
+            </span>
+            <select name="type_espace">
+              <option value="">Quelle occasion ?</option>
+              <option value="petite_salle" {% if request.GET.type_espace == 'petite_salle' %}selected{% endif %}>Petite salle</option>
+              <option value="moyenne_salle" {% if request.GET.type_espace == 'moyenne_salle' %}selected{% endif %}>Moyenne salle</option>
+              <option value="grande_salle" {% if request.GET.type_espace == 'grande_salle' %}selected{% endif %}>Grande salle</option>
+              <option value="reunion" {% if request.GET.type_espace == 'reunion' %}selected{% endif %}>Salle de réunion</option>
+              <option value="brainstorming" {% if request.GET.type_espace == 'brainstorming' %}selected{% endif %}>Salle de brainstorming</option>
+              <option value="studio" {% if request.GET.type_espace == 'studio' %}selected{% endif %}>Salle de studio</option>
+              <option value="espace_detente" {% if request.GET.type_espace == 'espace_detente' %}selected{% endif %}>Espace détente</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Date -->
+        <div class="col-md-3">
+          <label class="form-label">Quand ?</label>
+          <div class="search-input-group">
+            <span class="search-icon">
+              <svg width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+                <path d="M11 6.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1z"/>
+                <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4H1z"/>
+              </svg>
+            </span>
+            <input 
+              type="date" 
+              name="date"
+              id="search-date"
+              value="{{ request.GET.date }}"
+            >
+          </div>
+        </div>
+
+        <!-- Bouton recherche -->
+        <div class="col-md-3">
+          <div class="search-btn-wrapper">
+            <button type="submit" title="Rechercher">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16">
+                <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+      </form>
+    </div>
+  </div>
+</section>
+
+
+<!-- ESPACES POPULAIRES / RÉSULTATS DE RECHERCHE -->
+<section class="espaces-section">
+  <div class="container">
+    <div class="section-header">
+      {% if request.GET.ville or request.GET.type_espace or request.GET.date %}
+        <h2>Résultats de recherche</h2>
+        <p>{{ espaces|length }} espace{% if espaces|length > 1 %}s{% endif %} trouvé{% if espaces|length > 1 %}s{% endif %}</p>
+      {% else %}
+        <h2>Espaces populaires</h2>
+        <p>Découvrez nos espaces les plus demandés par nos clients</p>
+      {% endif %}
+    </div>
+
+    <div class="row g-4">
+      {% for espace in espaces %}
+      <div class="col-lg-4 col-md-6">
+        <div class="espace-card">
+          <div class="espace-card-img" style="position: relative;">
+            <a href="{% url 'detail_espace' espace.id %}">
+              {% if espace.image %}
+                <img src="{{ espace.image.url }}" alt="{{ espace.nom }}">
+              {% else %}
+                <img src="{% static 'client/images/default_espace.jpg' %}" alt="Espace">
+              {% endif %}
+            </a>
+            <span class="espace-badge">⭐ Populaire</span>
+            
+            <!-- Bouton favori sur l'image -->
+            {% if user.is_authenticated %}
+            <button class="favori-btn {% if espace.id in favoris_ids %}active{% endif %}" 
+                    data-espace-id="{{ espace.id }}" 
+                    title="{% if espace.id in favoris_ids %}Retirer des favoris{% else %}Ajouter aux favoris{% endif %}">
+                <svg width="24" height="24" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" 
+                     fill="{% if espace.id in favoris_ids %}currentColor{% else %}none{% endif %}">
+                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                </svg>
+            </button>
+            {% endif %}
+          </div>
+          <div class="espace-card-body">
+            <h3 class="espace-title">{{ espace.nom }}</h3>
+            <div class="espace-location">
+              <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                <path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10zm0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6z"/>
+              </svg>
+              {{ espace.ville }}
+            </div>
+            <div class="espace-capacity">👥 Jusqu'à {{ espace.capacite }} personnes</div>
+
+            <div class="espace-features">
+              {% if espace.equipements %}
+                <span class="feature-tag">{{ espace.equipements }}</span>
+              {% else %}
+                <span class="feature-tag text-muted">Aucun équipement</span>
+              {% endif %}
+            </div>
+  
+            <div class="espace-footer">
+              <div class="espace-price">{{ espace.prix_par_heure }}€ <span>/heure</span></div>
+              <a href="{% url 'detail_espace' espace.id %}" class="btn-voir">Voir détails</a>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% empty %}
+      <p class="text-center text-muted">Aucun espace disponible pour le moment.</p>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+  <!-- CATÉGORIES -->
+<section class="categories-section">
+  <div class="container">
+    <div class="section-header">
+      <h2>Explorez par type d'espace</h2>
+      <p>Quel type d'espace recherchez-vous aujourd'hui ?</p>
+    </div>
+
+    <div class="row g-4">
+      <div class="col-md-4">
+        <a href="{% url 'espaces_par_categorie' 'reunion' %}" class="category-card">
+          <img class="category-img" src="https://images.unsplash.com/photo-1497366811353-6870744d04b2?w=800" alt="Réunions">
+          <div class="category-overlay">
+            <div class="category-title">Salles de réunion</div>
+          </div>
+        </a>
+      </div>
+
+      <div class="col-md-4">
+        <a href="{% url 'espaces_par_categorie' 'coworking' %}" class="category-card">
+          <img class="category-img" src="https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=800" alt="Coworking">
+          <div class="category-overlay">
+            <div class="category-title">Espaces coworking</div>
+          </div>
+        </a>
+      </div>
+
+      <div class="col-md-4">
+        <a href="{% url 'espaces_par_categorie' 'evenements' %}" class="category-card">
+          <img class="category-img" src="https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800" alt="Événements">
+          <div class="category-overlay">
+            <div class="category-title">Salles d'événements</div>
+          </div>
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+  <!-- AVANTAGES -->
+  <section class="avantages-section">
+    <div class="container">
+      <div class="section-header">
+        <h2>Pourquoi choisir Point Pro ?</h2>
+        <p>Réservez en toute confiance avec nos garanties</p>
+      </div>
+
+      <div class="row g-4">
+        <div class="col-md-4">
+          <div class="avantage-card">
+            <div class="avantage-icon">⚡</div>
+            <h3 class="avantage-title">Réservation instantanée</h3>
+            <p class="avantage-text">Votre réservation, rapide et simple, disponible à toute heure, 24h/24 et 7j/7.</p>
+          </div>
+        </div>
+
+        <div class="col-md-4">
+          <div class="avantage-card">
+            <div class="avantage-icon">🛡️</div>
+            <h3 class="avantage-title">Paiement sécurisé</h3>
+            <p class="avantage-text">Vos transactions sont protégées et cryptées pour votre sécurité</p>
+          </div>
+        </div>
+
+        <div class="col-md-4">
+          <div class="avantage-card">
+            <div class="avantage-icon">💬</div>
+            <h3 class="avantage-title">Support 24/7</h3>
+            <p class="avantage-text">Notre équipe est disponible pour répondre à toutes vos questions</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <p>© 2025 Point Pro — Tous droits réservés</p>
+  </footer>
+
+  <!-- CSS pour le bouton favori -->
+  <style>
+.favori-btn {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.95);
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    z-index: 10;
+}
+
+.favori-btn:hover {
+    transform: scale(1.1);
+    background: #ffffff;
+}
+
+.favori-btn svg {
+    color: #dc3545;
+    transition: all 0.2s ease;
+}
+
+.favori-btn.active svg {
+    fill: currentColor;
+}
+
+.favori-btn:hover svg {
+    transform: scale(1.1);
+}
+
+.favori-btn.animating {
+    animation: heartBeat 0.3s ease;
+}
+
+@keyframes heartBeat {
+    0%, 100% { transform: scale(1); }
+    25% { transform: scale(1.2); }
+    50% { transform: scale(0.95); }
+}
+
+.favori-notification {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    background: #1a1a1a;
+    color: white;
+    padding: 1rem 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    z-index: 9999;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.3s ease;
+}
+
+.favori-notification.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+  </style>
+
+  <!-- JS Bootstrap -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="{% static 'client/script.js' %}"></script>
+  
+  <!-- JavaScript pour le bouton favori -->
+  <script>
+document.addEventListener('DOMContentLoaded', function() {
+    const favoriBtns = document.querySelectorAll('.favori-btn');
+    
+    favoriBtns.forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const espaceId = this.dataset.espaceId;
+            const svg = this.querySelector('svg');
+            
+            fetch(`/toggle-favori/${espaceId}/`, {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRFToken': getCookie('csrftoken')
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    this.classList.add('animating');
+                    
+                    setTimeout(() => {
+                        if (data.is_favorite) {
+                            this.classList.add('active');
+                            svg.setAttribute('fill', 'currentColor');
+                            this.title = 'Retirer des favoris';
+                        } else {
+                            this.classList.remove('active');
+                            svg.setAttribute('fill', 'none');
+                            this.title = 'Ajouter aux favoris';
+                        }
+                        
+                        this.classList.remove('animating');
+                    }, 200);
+                    
+                    showNotification(data.message);
+                }
+            })
+            .catch(error => console.error('Erreur:', error));
+        });
+    });
+    
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    
+    function showNotification(message) {
+        const notif = document.createElement('div');
+        notif.className = 'favori-notification';
+        notif.textContent = message;
+        document.body.appendChild(notif);
+        
+        setTimeout(() => notif.classList.add('show'), 10);
+        setTimeout(() => {
+            notif.classList.remove('show');
+            setTimeout(() => notif.remove(), 300);
+        }, 2000);
+    }
+});
+
+
+  document.addEventListener('DOMContentLoaded', function() {
+      // Définir la date minimale = aujourd'hui
+      const searchDateInput = document.getElementById('search-date');
+      if (searchDateInput) {
+          const today = new Date().toISOString().split('T')[0];
+          searchDateInput.setAttribute('min', today);
+      }
+  });
+
+  </script>
+</body>
+</html>

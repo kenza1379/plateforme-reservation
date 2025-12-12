@@ -1,0 +1,35 @@
+{% extends "tech_interface/base_tech.html" %}
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="hero">
+    <div>
+        <h1>Dashboard Technicien</h1>
+        <p>Gérez les incidents et la maintenance des salles</p>
+    </div>
+</div>
+
+<!-- Cartes du Dashboard -->
+<div class="dashboard-cards">
+    <div class="card">
+        <h2>Total des salles</h2>
+        <p>{{ total_salles }}</p>
+        <a href="{% url 'tech_interface:salles_status' %}">Voir les salles</a>
+    </div>
+    
+    <div class="card">
+        <h2>En maintenance</h2>
+        <p>{{ en_maintenance }}</p>
+        <a href="{% url 'tech_interface:salles_status' %}">Gérer</a>
+    </div>
+    
+    <div class="card">
+        <h2>Incidents ouverts</h2>
+        <p>{{ incidents_ouverts }}</p>
+        <a href="{% url 'tech_interface:incidents_list' %}">Voir les incidents</a>
+    </div>
+</div>
+
+
+{% endblock %}

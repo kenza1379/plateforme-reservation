@@ -1,0 +1,158 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inscription</title>
+    <link rel="stylesheet" href="{% static 'users/css/style.css' %}">
+</head>
+<body>
+    <div class="soft-background">
+        <div class="floating-shapes">
+            <div class="soft-blob blob-1"></div>
+            <div class="soft-blob blob-2"></div>
+            <div class="soft-blob blob-3"></div>
+            <div class="soft-blob blob-4"></div>
+        </div>
+    </div>
+
+    <div class="login-container">
+        <div class="soft-card">
+            <div class="comfort-header">
+                <div class="gentle-logo">
+                    <div class="logo-circle">
+                        <div class="comfort-icon">
+                            <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+                                <path d="M16 2C8.3 2 2 8.3 2 16s6.3 14 14 14 14-6.3 14-14S23.7 2 16 2z" fill="none" stroke="currentColor" stroke-width="1.5"/>
+                                <path d="M12 16a4 4 0 108 0" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                                <circle cx="12" cy="12" r="1.5" fill="currentColor"/>
+                                <circle cx="20" cy="12" r="1.5" fill="currentColor"/>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+                <h1 class="comfort-title">Créer un compte</h1>
+                <p class="gentle-subtitle">Rejoignez-nous pour commencer</p>
+            </div>
+            
+            <!-- FORMULAIRE CORRIGÉ -->
+            <form class="comfort-form" id="signupForm" method="post" action="{% url 'signup' %}" novalidate>
+                {% csrf_token %}
+                
+                {% if error %}
+                <div class="gentle-error" style="text-align: center; margin-bottom: 16px; min-height: auto;">
+                    {{ error }}
+                </div>
+                {% endif %}
+
+                <div class="soft-field">
+                    <div class="field-container">
+                        <input type="text" id="fullname" name="fullname" required autocomplete="name" value="{{ fullname|default:'' }}">
+                        <label for="fullname">Nom complet</label>
+                    </div>
+                    <span class="gentle-error" id="fullnameError"></span>
+                </div>
+
+                <div class="soft-field">
+                    <div class="field-container">
+                        <input type="email" id="email" name="email" required autocomplete="email" value="{{ email|default:'' }}">
+                        <label for="email">Adresse email</label>
+                    </div>
+                    <span class="gentle-error" id="emailError"></span>
+                </div>
+
+                <div class="soft-field">
+                    <div class="field-container">
+                        <input type="password" id="password" name="password" required autocomplete="new-password">
+                        <label for="password">Mot de passe</label>
+                        <button type="button" class="gentle-toggle" id="passwordToggle" aria-label="Afficher/masquer le mot de passe">
+                            <div class="toggle-icon">
+                                <svg class="eye-open" width="20" height="20" viewBox="0 0 20 20" fill="none">
+                                    <path d="M10 3c-4.5 0-8.3 3.8-9 7 .7 3.2 4.5 7 9 7s8.3-3.8 9-7c-.7-3.2-4.5-7-9-7z" stroke="currentColor" stroke-width="1.5" fill="none"/>
+                                    <circle cx="10" cy="10" r="3" stroke="currentColor" stroke-width="1.5" fill="none"/>
+                                </svg>
+                                <svg class="eye-closed" width="20" height="20" viewBox="0 0 20 20" fill="none">
+                                    <path d="M3 3l14 14M8.5 8.5a3 3 0 004 4m2.5-2.5C15 10 12.5 7 10 7c-.5 0-1 .1-1.5.3M10 13c-2.5 0-4.5-2-5-3 .3-.6.7-1.2 1.2-1.7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </div>
+                        </button>
+                    </div>
+                    <div class="password-strength" id="passwordStrength" style="display: none;">
+                        <div class="strength-bar">
+                            <div class="strength-fill" id="strengthFill"></div>
+                        </div>
+                        <span class="strength-text" id="strengthText"></span>
+                    </div>
+                    <span class="gentle-error" id="passwordError"></span>
+                </div>
+
+                <div class="soft-field">
+                    <div class="field-container">
+                        <input type="password" id="confirmPassword" name="confirmPassword" required autocomplete="new-password">
+                        <label for="confirmPassword">Confirmer le mot de passe</label>
+                        <button type="button" class="gentle-toggle" id="confirmPasswordToggle" aria-label="Afficher/masquer le mot de passe">
+                            <div class="toggle-icon">
+                                <svg class="eye-open" width="20" height="20" viewBox="0 0 20 20" fill="none">
+                                    <path d="M10 3c-4.5 0-8.3 3.8-9 7 .7 3.2 4.5 7 9 7s8.3-3.8 9-7c-.7-3.2-4.5-7-9-7z" stroke="currentColor" stroke-width="1.5" fill="none"/>
+                                    <circle cx="10" cy="10" r="3" stroke="currentColor" stroke-width="1.5" fill="none"/>
+                                </svg>
+                                <svg class="eye-closed" width="20" height="20" viewBox="0 0 20 20" fill="none">
+                                    <path d="M3 3l14 14M8.5 8.5a3 3 0 004 4m2.5-2.5C15 10 12.5 7 10 7c-.5 0-1 .1-1.5.3M10 13c-2.5 0-4.5-2-5-3 .3-.6.7-1.2 1.2-1.7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </div>
+                        </button>
+                    </div>
+                    <span class="gentle-error" id="confirmPasswordError"></span>
+                </div>
+
+                <div class="comfort-options">
+                    <label class="gentle-checkbox">
+                        <input type="checkbox" id="terms" name="terms" required>
+                        <span class="checkbox-soft">
+                            <svg class="check-mark" width="12" height="10" viewBox="0 0 12 10" fill="none">
+                                <path d="M1 5l3 3 7-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </span>
+                        <span class="checkbox-text">J'accepte les <a href="#" class="comfort-link">conditions d'utilisation</a></span>
+                    </label>
+                </div>
+
+                <button type="submit" class="comfort-button">
+                    <span class="button-text">Créer mon compte</span>
+                    <div class="button-loader">
+                        <div class="gentle-spinner">
+                            <div class="spinner-circle"></div>
+                        </div>
+                    </div>
+                </button>
+            </form>
+
+            <div class="comfort-signup">
+                <span class="signup-text">Vous avez déjà un compte ?</span>
+                <a href="{% url 'login' %}" class="comfort-link signup-link">Se connecter</a>
+            </div>
+
+            <div class="gentle-success" id="successMessage">
+                <div class="success-bloom">
+                    <div class="bloom-rings">
+                        <div class="bloom-ring ring-1"></div>
+                        <div class="bloom-ring ring-2"></div>
+                        <div class="bloom-ring ring-3"></div>
+                    </div>
+                    <div class="success-icon">
+                        <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+                            <path d="M8 14l5 5 11-11" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </div>
+                </div>
+                <h3 class="success-title">Bienvenue !</h3>
+                <p class="success-desc">Votre compte a été créé avec succès...</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="{% static 'users/js/script.js' %}"></script>
+</body>
+</html>

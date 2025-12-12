@@ -1,0 +1,300 @@
+{% extends 'admin_interface/base_admin.html' %}
+{% block title %}Suivi des Interventions{% endblock %}
+
+{% block content %}
+
+<div class="container">
+    <div class="flex-between header-line">
+        <h1>📊 Suivi des Interventions</h1>
+        <div class="header-controls">
+            <select id="filter-technicien" onchange="filterByTech(this.value)" class="select-basic">
+                <option value="">Tous les techniciens</option>
+                {% for tech in techniciens %}
+                <option value="{{ tech.id }}">{{ tech.user.get_full_name }}</option>
+                {% endfor %}
+            </select>
+
+            <button onclick="openCreateModal()" class="btn btn-primary">
+                ➕ Nouvelle Intervention
+            </button>
+        </div>
+    </div>
+
+    <!-- Tableau -->
+    <div class="table-container">
+        <h2>Historique complet</h2>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>TECHNICIEN</th>
+                    <th>SALLE</th>
+                    <th>INCIDENT</th>
+                    <th>COÛT</th>
+                    <th>STATUT</th>
+                    <th>ACTIONS</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for intervention in interventions %}
+                <tr data-tech-id="{{ intervention.technicien.id }}">
+                    <td><strong>#{{ intervention.id }}</strong></td>
+                    <td>{{ intervention.technicien.user.get_full_name }}</td>
+                    <td>{{ intervention.espace.nom }}</td>
+                    <td>{{ intervention.incident.description|truncatewords:8 }}</td>
+                    <td>{{ intervention.cout_materiel }}€</td>
+
+                    <td>
+                        {% if intervention.statut == 'terminee' %}
+                            <span class="status-badge status-validee">✔️ Terminée</span>
+                        {% elif intervention.statut == 'en_cours' %}
+                            <span class="status-badge status-en-cours">🔧 En cours</span>
+                        {% else %}
+                            <span class="status-badge status-en-attente">⏸️ Suspendue</span>
+                        {% endif %}
+                    </td>
+
+                    <td>
+                        <div class="actions">
+                            <button onclick="showDetails('{{ intervention.id }}')" class="btn btn-secondary">👁️ Détails</button>
+                            <button onclick="openEditModal('{{ intervention.id }}')" class="btn btn-warning">✏️ Modifier</button>
+                        </div>
+                    </td>
+                </tr>
+
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="text-center empty">Aucune intervention enregistrée</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+
+
+<!-- ========== MODAL FORMULAIRE ========== -->
+<div id="createModal" class="modal hidden">
+    <div class="modal-content modal-intervention">
+
+        <h2 id="modalTitle" class="modal-header-title">➕ Nouvelle Intervention</h2>
+
+        <form id="interventionForm" method="POST" action="{% url 'admin_interface:intervention_create' %}">
+            {% csrf_token %}
+            <input type="hidden" id="interventionId" name="intervention_id">
+
+            <div class="form-group">
+                <label>Salle concernée *</label>
+                <select name="salle" id="salle" required class="form-select">
+                    <option value="">-- Sélectionner une salle --</option>
+                    {% for espace in espaces %}
+                    <option value="{{ espace.id }}">{{ espace.nom }} - {{ espace.batiment }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Technicien assigné *</label>
+                <select name="technicien" id="technicien" required class="form-select">
+                    <option value="">-- Sélectionner un technicien --</option>
+                    {% for tech in techniciens %}
+                    <option value="{{ tech.id }}">{{ tech.user.get_full_name }} - {{ tech.specialite }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Description *</label>
+                <textarea name="description" id="description" rows="3" class="form-textarea" required></textarea>
+            </div>
+
+            <div class="form-group">
+                <label>Priorité</label>
+                <select name="priorite" id="priorite" class="form-select">
+                    <option value="basse">🟢 Basse</option>
+                    <option value="moyenne" selected>🟡 Moyenne</option>
+                    <option value="haute">🔴 Haute</option>
+                    <option value="urgente">🚨 Urgente</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Coût estimé (€)</label>
+                <input type="number" name="cout_estime" id="cout_estime" class="form-input" min="0" step="0.01">
+            </div>
+
+            <div class="modal-footer">
+                <button type="submit" class="btn-modal btn-save">💾 Enregistrer</button>
+                <button type="button" onclick="closeCreateModal()" class="btn-modal btn-cancel">Fermer</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+<!-- ========== MODAL DÉTAILS ========== -->
+<div id="detailsModal" class="modal hidden">
+    <div class="modal-content modal-details">
+        <span class="close" onclick="closeDetailsModal()">&times;</span>
+        <div id="modalBody"></div>
+    </div>
+</div>
+
+
+<style>
+/* --- mise en page --- */
+.header-line { margin: 40px 0 30px; }
+.header-controls { display:flex; gap:15px; align-items:center; }
+.select-basic { padding:10px; border-radius:8px; border:1px solid #ddd; }
+
+/* --- tableau --- */
+table { width: 100%; background:#fff; border-radius:8px; overflow:hidden; }
+th { background:#f8f9fa; padding:15px; }
+td { padding:15px; border-top:1px solid #eee; }
+.empty { padding:40px; color:#999; }
+
+/* --- boutons --- */
+.actions { display:flex; gap:8px; }
+.btn-warning { background:#fdcb6e; }
+.btn-success { background:#00b894; }
+
+/* --- badges --- */
+.status-badge {
+    padding:6px 12px; border-radius:8px; font-weight:600; font-size:0.85rem;
+}
+.status-validee { background:#55efc4; color:#006f4a; }
+.status-en-cours { background:#74b9ff; color:#0c63b6; }
+.status-en-attente { background:#ffeaa7; color:#c17f00; }
+
+/* --- modal --- */
+/* --- modal --- */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+}
+
+.hidden { display: none; }
+
+.modal-content {
+    background: white;
+    border-radius: 20px;
+    padding: 25px;
+    width: 80%;          
+    max-width: 600px;    
+    height: 70%;         
+    max-height: 500px;   
+    overflow-y: auto;     
+    box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+}
+
+.modal-header-title {
+    text-align: center;
+    margin-bottom: 20px;
+    font-size: 1.5rem;
+}
+
+.close {
+    font-size: 30px;
+    cursor: pointer;
+    float: right;
+}
+
+</style>
+
+
+<script>
+/* --- Filtre technicien --- */
+function filterByTech(id) {
+    document.querySelectorAll("tbody tr[data-tech-id]").forEach(row => {
+        row.style.display = (!id || row.dataset.techId === id) ? "" : "none";
+    });
+}
+
+/* --- création modal --- */
+function openCreateModal() {
+    const f = document.getElementById("interventionForm");
+    f.reset();
+    f.action = "{% url 'admin_interface:intervention_create' %}";
+    document.getElementById("modalTitle").textContent = "➕ Nouvelle Intervention";
+    document.getElementById("createModal").classList.remove("hidden");
+}
+
+function closeCreateModal() {
+    document.getElementById("createModal").classList.add("hidden");
+}
+
+/* --- édition --- */
+function openEditModal(id) {
+    const modal = document.getElementById("createModal");
+    const form = document.getElementById("interventionForm");
+
+    form.action = "{% url 'admin_interface:intervention_update' %}";
+    document.getElementById("modalTitle").textContent = "✏️ Modifier l'intervention";
+    document.getElementById("interventionId").value = id;
+
+    fetch(`/admin_interface/intervention/${id}/data/`)
+        .then(r => r.json())
+        .then(data => {
+            document.getElementById("salle").value = data.espace_id;
+            document.getElementById("technicien").value = data.technicien_id;
+            document.getElementById("description").value = data.description;
+            document.getElementById("priorite").value = data.priorite;
+            document.getElementById("cout_estime").value = data.cout_materiel;
+            modal.classList.remove("hidden");
+        });
+}
+
+/* --- clôture --- */
+function closeIntervention(id) {
+    if (!confirm("Clôturer cette intervention ?")) return;
+    fetch(`/admin_interface/intervention/${id}/close/`, {
+        method:"POST",
+        headers: {"X-CSRFToken": document.querySelector("[name=csrfmiddlewaretoken]").value}
+    })
+    .then(r => r.json())
+    .then(data => data.success ? location.reload() : alert("Erreur lors de la clôture"));
+}
+
+/* --- détails --- */
+function showDetails(id) {
+    fetch(`/admin_interface/intervention/${id}/details/`)
+    .then(r => r.json())
+    .then(data => {
+        document.getElementById("modalBody").innerHTML = `
+            <h2>Intervention #${data.id}</h2>
+            <p><strong>Technicien :</strong> ${data.technicien}</p>
+            <p><strong>Salle :</strong> ${data.espace}</p>
+            <p><strong>Coût :</strong> ${data.cout}€</p>
+            <p><strong>Priorité :</strong> ${data.priorite}</p>
+
+            <h3>Description</h3>
+            <div class="zone">${data.description}</div>
+
+            <h3>Notes</h3>
+            <div class="zone">
+                <p><strong>État initial :</strong><br>${data.note_debut || "Non renseigné"}</p>
+                <p><strong>Actions :</strong><br>${data.note_intervention || "Non renseigné"}</p>
+                <p><strong>Matériel :</strong><br>${data.materiel || "Non renseigné"}</p>
+            </div>
+        `;
+        document.getElementById("detailsModal").classList.remove("hidden");
+    });
+}
+
+function closeDetailsModal() {
+    document.getElementById("detailsModal").classList.add("hidden");
+}
+</script>
+
+{% endblock %}

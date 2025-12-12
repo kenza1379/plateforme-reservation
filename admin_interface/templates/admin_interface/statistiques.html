@@ -1,0 +1,110 @@
+{% extends 'admin_interface/base_admin.html' %}
+
+{% block title %}Statistiques{% endblock %}
+
+{% block content %}
+
+<div class="container">
+    <h1 class="text-center">📊 Statistiques & Analyses</h1>
+
+    <!-- ========== CARTES STATISTIQUES ========== -->
+    <div class="stats-grid" style="margin: 40px 0;">
+        <div class="stat-card">
+            <h3>Salles totales</h3>
+            <div class="stat-value">{{ nb_salles }}</div>
+        </div>
+
+        <div class="stat-card">
+            <h3>Réservations totales</h3>
+            <div class="stat-value">{{ nb_reservations }}</div>
+        </div>
+
+        <div class="stat-card">
+            <h3>Techniciens actifs</h3>
+            <div class="stat-value">{{ nb_techniciens }}</div>
+        </div>
+
+        <div class="stat-card">
+            <h3>Clients enregistrés</h3>
+            <div class="stat-value">{{ nb_clients|default:0 }}</div>
+        </div>
+    </div>
+
+    <!-- ========== GRAPHIQUE ========== -->
+    <div style="background: #fff; padding: 40px; border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.08); margin-top: 40px;">
+        <h2 class="text-center" style="margin-bottom: 30px;">Vue d'ensemble du système</h2>
+        <canvas id="statsChart" style="max-width: 800px; margin: 0 auto;"></canvas>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    var ctx = document.getElementById('statsChart').getContext('2d');
+    var chart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: ['Salles', 'Réservations', 'Techniciens', 'Clients'],
+            datasets: [{
+                label: 'Statistiques globales',
+                data: [
+                    {{ nb_salles }}, 
+                    {{ nb_reservations }}, 
+                    {{ nb_techniciens }}, 
+                    {{ nb_clients|default:0 }}
+                ],
+                backgroundColor: [
+                    'rgba(231, 218, 199, 0.8)',
+                    'rgba(231, 218, 199, 0.6)',
+                    'rgba(231, 218, 199, 0.4)',
+                    'rgba(231, 218, 199, 0.2)'
+                ],
+                borderColor: [
+                    'rgba(231, 218, 199, 1)',
+                    'rgba(231, 218, 199, 1)',
+                    'rgba(231, 218, 199, 1)',
+                    'rgba(231, 218, 199, 1)'
+                ],
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        precision: 0,
+                        font: {
+                            family: 'Poppins',
+                            size: 12
+                        }
+                    },
+                    grid: {
+                        color: 'rgba(0, 0, 0, 0.05)'
+                    }
+                },
+                x: {
+                    ticks: {
+                        font: {
+                            family: 'Poppins',
+                            size: 13,
+                            weight: '600'
+                        }
+                    },
+                    grid: {
+                        display: false
+                    }
+                }
+            }
+        }
+    });
+</script>
+{% endblock %}

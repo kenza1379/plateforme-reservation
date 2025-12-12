@@ -1,0 +1,311 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connexion</title>
+    <link rel="stylesheet" href="{% static 'users/css/style.css' %}">
+</head>
+<body>
+    <div class="soft-background">
+        <div class="floating-shapes">
+            <div class="soft-blob blob-1"></div>
+            <div class="soft-blob blob-2"></div>
+            <div class="soft-blob blob-3"></div>
+            <div class="soft-blob blob-4"></div>
+        </div>
+    </div>
+
+    <div class="login-container">
+        <div class="soft-card">
+            <div class="comfort-header">
+                <div class="gentle-logo">
+                    <div class="logo-circle">
+                        <div class="comfort-icon">
+                            <svg width="24" height="24" viewBox="0 0 32 32" fill="none">
+                                <path d="M16 2C8.3 2 2 8.3 2 16s6.3 14 14 14 14-6.3 14-14S23.7 2 16 2z" fill="none" stroke="currentColor" stroke-width="1.5"/>
+                                <path d="M12 16a4 4 0 108 0" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                                <circle cx="12" cy="12" r="1.5" fill="currentColor"/>
+                                <circle cx="20" cy="12" r="1.5" fill="currentColor"/>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+                <h1 class="comfort-title">Bon retour</h1>
+                <p class="gentle-subtitle">Connectez-vous à votre compte</p>
+            </div>
+            
+            <form class="comfort-form" id="loginForm" method="post" action="{% url 'login' %}">
+                {% csrf_token %}
+                <!-- Champ caché pour redirection après connexion -->
+                <input type="hidden" name="next" value="{{ request.GET.next }}">
+
+                {% if error %}
+                <div class="gentle-error" style="text-align: center; margin-bottom: 16px; min-height: auto;">
+                    {{ error }}
+                </div>
+                {% endif %}
+
+                <div class="soft-field">
+                    <div class="field-container">
+                        <input type="text" id="identifier" name="identifier" required autocomplete="username" value="{{ identifier|default:'' }}">
+                        <label for="identifier">Email ou Nom d'utilisateur</label>
+                    </div>
+                    <span class="gentle-error" id="identifierError"></span>
+                </div>
+
+                <div class="soft-field">
+                    <div class="field-container">
+                        <input type="password" id="password" name="password" required autocomplete="current-password">
+                        <label for="password">Mot de passe</label>
+                        <button type="button" class="gentle-toggle" id="passwordToggle" aria-label="Afficher/masquer le mot de passe">
+                            <div class="toggle-icon">
+                                <svg class="eye-open" width="20" height="20" viewBox="0 0 20 20" fill="none">
+                                    <path d="M10 3c-4.5 0-8.3 3.8-9 7 .7 3.2 4.5 7 9 7s8.3-3.8 9-7c-.7-3.2-4.5-7-9-7z" stroke="currentColor" stroke-width="1.5" fill="none"/>
+                                    <circle cx="10" cy="10" r="3" stroke="currentColor" stroke-width="1.5" fill="none"/>
+                                </svg>
+                                <svg class="eye-closed" width="20" height="20" viewBox="0 0 20 20" fill="none">
+                                    <path d="M3 3l14 14M8.5 8.5a3 3 0 004 4m2.5-2.5C15 10 12.5 7 10 7c-.5 0-1 .1-1.5.3M10 13c-2.5 0-4.5-2-5-3 .3-.6.7-1.2 1.2-1.7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </div>
+                        </button>
+                    </div>
+                    <span class="gentle-error" id="passwordError"></span>
+                </div>
+
+                <div class="comfort-options">
+                    <label class="gentle-checkbox">
+                        <input type="checkbox" id="remember" name="remember">
+                        <span class="checkbox-soft">
+                            <svg class="check-mark" width="12" height="10" viewBox="0 0 12 10" fill="none">
+                                <path d="M1 5l3 3 7-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </span>
+                        <span class="checkbox-text">Se souvenir de moi</span>
+                    </label>
+                    <a href="#" class="comfort-link" id="forgotPasswordLink">Mot de passe oublié ?</a>
+                </div>
+
+                <button type="submit" class="comfort-button">
+                    <span class="button-text">Se connecter</span>
+                    <div class="button-loader">
+                        <div class="gentle-spinner">
+                            <div class="spinner-circle"></div>
+                        </div>
+                    </div>
+                </button>
+            </form>
+
+            <div class="comfort-signup">
+                <span class="signup-text">Vous n'avez pas de compte ?</span>
+                <a href="{% url 'signup' %}" class="comfort-link signup-link">S'inscrire</a>
+            </div>
+        </div>
+    </div>
+
+        <!-- Modal Mot de passe oublié -->
+        <div class="modal" id="resetPasswordModal" style="display:none;">
+        <div class="modal-content soft-card">
+            <span class="close-button" id="closeModal">&times;</span>
+            <h2>Réinitialiser le mot de passe</h2>
+            <p>Entrez votre email pour recevoir un lien de réinitialisation :</p>
+
+            <form method="post" action="{% url 'password_reset_request' %}">
+                {% csrf_token %}
+                <div class="soft-field">
+                    <div class="field-container">
+                        <input type="email" name="email" required>
+                        <label>Email</label>
+                    </div>
+                </div>
+                <button type="submit" class="comfort-button">Envoyer le lien</button>
+            </form>
+        </div>
+    </div>
+
+    <style>
+        /* Overlay du modal */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+/* Contenu du modal */
+.modal-content {
+    background: #fff;
+    padding: 32px;
+    border-radius: 16px;
+    max-width: 440px;
+    width: 90%;
+    position: relative;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+/* Bouton de fermeture */
+.close-button {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    font-weight: 300;
+    color: #64748b;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    background: transparent;
+    line-height: 1;
+}
+
+.close-button:hover {
+    background: #f1f5f9;
+    color: #334155;
+    transform: rotate(90deg);
+}
+
+/* Titre du modal */
+.modal-content h2 {
+    font-size: 24px;
+    font-weight: 600;
+    color: #1e293b;
+    margin: 0 0 12px 0;
+    padding-right: 32px;
+}
+
+/* Sous-titre */
+.modal-content p {
+    font-size: 15px;
+    color: #64748b;
+    margin: 0 0 24px 0;
+    line-height: 1.5;
+}
+
+/* Champ de formulaire dans le modal */
+.modal-content .soft-field {
+    margin-bottom: 24px;
+}
+
+.modal-content .field-container {
+    position: relative;
+}
+
+.modal-content .field-container input {
+    width: 100%;
+    padding: 14px 16px;
+    font-size: 15px;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    background: #f8fafc;
+    transition: all 0.3s ease;
+    outline: none;
+    box-sizing: border-box;
+}
+
+.modal-content .field-container input:focus {
+    border-color: #eae0d4;
+    background: #fff;
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+}
+
+.modal-content .field-container label {
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 15px;
+    color: #64748b;
+    pointer-events: none;
+    transition: all 0.3s ease;
+    background: transparent;
+    padding: 0 4px;
+}
+
+.modal-content .field-container input:focus + label,
+.modal-content .field-container input:not(:placeholder-shown) + label {
+    top: 0;
+    font-size: 12px;
+    color: #000000;
+    background: #fff;
+}
+
+/* Bouton du modal */
+.modal-content .comfort-button {
+    width: 100%;
+    padding: 14px 24px;
+    font-size: 16px;
+    font-weight: 600;
+    color: #fff;
+    background: linear-gradient(135deg, #000000 0%, #000000 100%);
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.modal-content .comfort-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+}
+
+.modal-content .comfort-button:active {
+    transform: translateY(0);
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+    .modal-content {
+        padding: 24px;
+        max-width: 95%;
+    }
+    
+    .modal-content h2 {
+        font-size: 20px;
+    }
+    
+    .modal-content p {
+        font-size: 14px;
+    }
+}
+        </style>
+
+    <script src="{% static 'users/js/login-script.js' %}"></script>
+</body>
+</html>

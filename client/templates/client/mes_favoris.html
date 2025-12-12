@@ -1,0 +1,479 @@
+{% extends "client/base.html" %}
+{% load extra_filters %}
+
+{% block title %}Mes Favoris{% endblock %}
+
+{% block content %}
+<div class="favoris-container">
+    <!-- En-tête -->
+    <div class="header-section">
+        <h1>Mes Favoris</h1>
+        <p>{{ total_favoris }} espace{% if total_favoris > 1 %}s{% endif %} favori{% if total_favoris > 1 %}s{% endif %}</p>
+        <a href="{% url 'accueil' %}" class="btn-back">← Retour à l'accueil</a>
+    </div>
+
+    {% if espaces_favoris %}
+        <div class="favoris-grid">
+            {% for espace in espaces_favoris %}
+            <div class="espace-card">
+                <!-- Image -->
+                <div class="espace-image-wrapper">
+                    {% if espace.image %}
+                        <img src="{{ espace.image.url }}" alt="{{ espace.nom }}">
+                    {% else %}
+                        <div class="image-placeholder">
+                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                                <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                            </svg>
+                        </div>
+                    {% endif %}
+                    
+                    <!-- Bouton favori -->
+                    <button class="favori-btn active" data-espace-id="{{ espace.id }}" title="Retirer des favoris">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2">
+                            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- Contenu -->
+                <div class="espace-body">
+                    <div class="espace-header">
+                        <h3>{{ espace.nom }}</h3>
+                        <span class="badge-type">{{ espace.get_type_espace_display }}</span>
+                    </div>
+
+                    <div class="espace-info">
+                        <div class="info-item">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                                <circle cx="12" cy="10" r="3"></circle>
+                            </svg>
+                            <span>{{ espace.ville }}</span>
+                        </div>
+                        
+                        <div class="info-item">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                                <circle cx="9" cy="7" r="4"></circle>
+                                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                            </svg>
+                            <span>{{ espace.capacite }} pers.</span>
+                        </div>
+                    </div>
+
+                    <!-- Équipements -->
+                    {% if espace.equipements %}
+                    <div class="equipements">
+                        {% for equipement in espace.equipements|split_by:','|slice:":3" %}
+                        <span class="equipement-badge">{{ equipement|truncatewords:2 }}</span>
+                        {% endfor %}
+                        {% if espace.equipements|split_by:','|length > 3 %}
+                        <span class="equipement-badge">+{{ espace.equipements|split_by:','|length|add:"-3" }}</span>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+
+                    <!-- Footer -->
+                    <div class="espace-footer">
+                        <div class="prix">
+                            <span class="prix-value">{{ espace.prix_par_heure }}€</span>
+                            <span class="prix-label">/heure</span>
+                        </div>
+                        <a href="{% url 'detail_espace' espace.id %}" class="btn-voir">Voir l'espace</a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <!-- État vide -->
+        <div class="empty-state">
+            <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+            </svg>
+            <h3>Aucun favori pour le moment</h3>
+            <p>Explorez nos espaces et ajoutez vos coups de cœur ici</p>
+            <a href="{% url 'accueil' %}" class="btn-primary">Découvrir les espaces</a>
+        </div>
+    {% endif %}
+</div>
+
+<style>
+.favoris-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 4rem 2rem;
+}
+
+/* En-tête */
+.header-section {
+    margin-bottom: 3rem;
+}
+
+.header-section h1 {
+    font-size: 2.5rem;
+    font-weight: 400;
+    color: #1a1a1a;
+    margin-bottom: 0.5rem;
+    letter-spacing: -0.02em;
+}
+
+.header-section p {
+    font-size: 0.95rem;
+    color: #6c757d;
+    font-weight: 300;
+}
+
+.btn-back {
+  display: inline-block;
+  margin-top: 20px;
+  color: rgb(0, 0, 0);
+  text-decoration: none;
+  font-weight: 500;
+  transition: opacity 0.3s;
+}
+
+.btn-back:hover {
+  opacity: 0.8;
+  color: rgb(0, 0, 0);
+}
+
+/* Grille */
+.favoris-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 2rem;
+}
+
+/* Carte espace */
+.espace-card {
+    background: #ffffff;
+    border: 1px solid #e5e5e5;
+    border-radius: 12px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.espace-card:hover {
+    box-shadow: 0 12px 28px rgba(0,0,0,0.08);
+    transform: translateY(-4px);
+}
+
+.espace-image-wrapper {
+    position: relative;
+    width: 100%;
+    height: 220px;
+    background: #F3ECE3;
+    overflow: hidden;
+}
+
+.espace-image-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.espace-card:hover .espace-image-wrapper img {
+    transform: scale(1.05);
+}
+
+.image-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #6c757d;
+}
+
+/* Bouton favori */
+.favori-btn {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.95);
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.favori-btn:hover {
+    transform: scale(1.1);
+    background: #ffffff;
+}
+
+.favori-btn svg {
+    color: #dc3545;
+    transition: all 0.2s ease;
+}
+
+.favori-btn:hover svg {
+    transform: scale(1.1);
+}
+
+/* Corps de la carte */
+.espace-body {
+    padding: 1.5rem;
+}
+
+.espace-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+    gap: 1rem;
+}
+
+.espace-header h3 {
+    font-size: 1.25rem;
+    font-weight: 500;
+    color: #1a1a1a;
+    margin: 0;
+    letter-spacing: -0.01em;
+    flex: 1;
+}
+
+.badge-type {
+    background: #F3ECE3;
+    color: #1a1a1a;
+    padding: 0.25rem 0.75rem;
+    border-radius: 100px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+/* Informations */
+.espace-info {
+    display: flex;
+    gap: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.info-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #6c757d;
+    font-size: 0.9rem;
+}
+
+.info-item svg {
+    flex-shrink: 0;
+}
+
+/* Équipements */
+.equipements {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.equipement-badge {
+    background: #f8f9fa;
+    color: #6c757d;
+    padding: 0.25rem 0.75rem;
+    border-radius: 100px;
+    font-size: 0.8rem;
+}
+
+/* Footer */
+.espace-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.prix {
+    display: flex;
+    align-items: baseline;
+    gap: 0.25rem;
+}
+
+.prix-value {
+    font-size: 1.75rem;
+    font-weight: 300;
+    color: #1a1a1a;
+}
+
+.prix-label {
+    font-size: 0.85rem;
+    color: #6c757d;
+}
+
+.btn-voir {
+    padding: 0.65rem 1.5rem;
+    background: #000000;
+    color: #ffffff;
+    text-decoration: none;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.btn-voir:hover {
+    transform: translateY(-1px);
+}
+
+/* État vide */
+.empty-state {
+    text-align: center;
+    padding: 6rem 2rem;
+    background: #ffffff;
+    border: 1px solid #e5e5e5;
+    border-radius: 12px;
+}
+
+.empty-state svg {
+    color: #dc3545;
+    margin-bottom: 2rem;
+    opacity: 0.3;
+}
+
+.empty-state h3 {
+    font-size: 1.75rem;
+    font-weight: 400;
+    color: #1a1a1a;
+    margin-bottom: 0.75rem;
+}
+
+.empty-state p {
+    color: #6c757d;
+    margin-bottom: 2.5rem;
+    font-size: 1rem;
+}
+
+.btn-primary {
+    display: inline-block;
+    padding: 1rem 2.5rem;
+    background: #1a1a1a;
+    color: #ffffff;
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: 500;
+    font-size: 1rem;
+    transition: all 0.2s ease;
+}
+
+.btn-primary:hover {
+    background: #000000;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .favoris-container {
+        padding: 2rem 1rem;
+    }
+    
+    .header-section h1 {
+        font-size: 2rem;
+    }
+    
+    .favoris-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .espace-footer {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: stretch;
+    }
+    
+    .btn-voir {
+        text-align: center;
+    }
+}
+
+/* Animation */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.espace-card {
+    animation: fadeInUp 0.5s ease forwards;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Gérer les clics sur les boutons favoris
+    const favoriBtns = document.querySelectorAll('.favori-btn');
+    
+    favoriBtns.forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const espaceId = this.dataset.espaceId;
+            const card = this.closest('.espace-card');
+            
+            // Appel AJAX
+            fetch(`/toggle-favori/${espaceId}/`, {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRFToken': getCookie('csrftoken')
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Animer la disparition de la carte
+                    card.style.opacity = '0';
+                    card.style.transform = 'scale(0.9)';
+                    
+                    setTimeout(() => {
+                        card.remove();
+                        
+                        // Vérifier s'il reste des favoris
+                        const remainingCards = document.querySelectorAll('.espace-card');
+                        if (remainingCards.length === 0) {
+                            location.reload(); // Recharger pour afficher l'état vide
+                        }
+                    }, 300);
+                }
+            })
+            .catch(error => console.error('Erreur:', error));
+        });
+    });
+    
+    // Fonction pour récupérer le cookie CSRF
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+});
+</script>
+{% endblock %}

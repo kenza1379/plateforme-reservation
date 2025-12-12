@@ -1,0 +1,185 @@
+{% extends "client/base.html" %}
+{% load static %}
+
+{% block title %}Mon compte - Informations personnelles{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'client/css/mon_compte.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<div class="account-container">
+    
+    {% if messages %}
+    <div class="messages-container">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="breadcrumb-nav">
+        <a href="{% url 'accueil' %}" class="breadcrumb-home">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+            </svg>
+        </a>
+        <span>›</span>
+        <a href="#">Mon compte</a>
+        <span>›</span>
+        <span>Informations personnelles</span>
+    </div>
+
+
+    <div class="account-layout">
+
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <a href="#" class="sidebar-item active">
+                <div class="sidebar-icon">👤</div>
+                <span>Informations personnelles</span>
+            </a>
+            <a href="{% url 'security_settings' %}" class="sidebar-item">
+                <div class="sidebar-icon">🔒</div>
+                <span>Paramètres de sécurité</span>
+            </a>
+            <a href="{% url 'payment_methods' %}" class="sidebar-item">
+                <div class="sidebar-icon">💳</div>
+                <span>Moyens de paiement</span>
+            </a>
+        </div>
+
+        <!-- Main content -->
+        <div class="main-content">
+            <div class="content-header">
+                <h1>Informations personnelles</h1>
+                <p>Mettez à jour vos informations et découvrez comment elles sont utilisées.</p>
+            </div>
+
+
+            <!-- INFOS -->
+            <div class="info-row">
+                <div class="info-label">Nom</div>
+                <div class="info-value">
+                    <div>
+                        {% if user.first_name or user.last_name %}
+                            {{ user.first_name }} {{ user.last_name }}
+                        {% else %}
+                            <span class="empty">Ajoutez votre nom</span>
+                        {% endif %}
+                    </div>
+                    <div class="info-description">Dites-nous comment vous appeler.</div>
+                </div>
+                <button type="button" class="modify-btn" data-target="nameModal">Modifier</button>
+            </div>
+
+            <div class="info-row">
+                <div class="info-label">Nom public</div>
+                <div class="info-value">
+                    <div>
+                        {% if user.profile.public_name %}
+                            {{ user.profile.public_name }}
+                        {% else %}
+                            <span class="empty">Choisissez le nom qui s'affichera sur notre site.</span>
+                        {% endif %}
+                    </div>
+                </div>
+                <button type="button" class="modify-btn" data-target="publicNameModal">Modifier</button>
+            </div>
+
+            <div class="info-row">
+                <div class="info-label">Adresse e-mail</div>
+                <div class="info-value">
+                    <div>
+                        {{ user.email }}
+                        <span class="verified-badge">Vérifiée</span>
+                    </div>
+                    <div class="info-description">Il s'agit de l'e-mail que vous utilisez pour vous connecter et sur lequel nous vous envoyons vos confirmations.</div>
+                </div>
+                <button type="button" class="modify-btn" data-target="emailModal">Modifier</button>
+            </div>
+
+            <div class="info-row">
+                <div class="info-label">Numéro de téléphone</div>
+                <div class="info-value">
+                    <div>
+                        {% if user.profile.phone %}
+                            {{ user.profile.phone }}
+                        {% else %}
+                            <span class="empty">Ajoutez votre numéro de téléphone</span>
+                        {% endif %}
+                    </div>
+                    <div class="info-description">Ce numéro sera utilisé pour vous informer de vos réservations et modifications éventuelles.</div>
+                </div>
+                <button type="button" class="modify-btn" data-target="phoneModal">Modifier</button>
+            </div>
+
+            <div class="info-row">
+                <div class="info-label">Date de naissance</div>
+                <div class="info-value">
+                    <div>
+                        {% if user.profile.birth_date %}
+                            {{ user.profile.birth_date|date:"d/m/Y" }}
+                        {% else %}
+                            <span class="empty">Indiquez votre date de naissance</span>
+                        {% endif %}
+                    </div>
+                </div>
+                <button type="button" class="modify-btn" data-target="birthDateModal">Modifier</button>
+            </div>
+
+            <div class="info-row">
+                <div class="info-label">Nationalité</div>
+                <div class="info-value">
+                    <div>
+                        {% if user.profile.nationality %}
+                            {{ user.profile.nationality }}
+                        {% else %}
+                            <span class="empty">Sélectionnez votre nationalité</span>
+                        {% endif %}
+                    </div>
+                </div>
+                <button type="button" class="modify-btn" data-target="nationalityModal">Modifier</button>
+            </div>
+
+            <div class="info-row">
+                <div class="info-label">Genre</div>
+                <div class="info-value">
+                    <div>
+                        {% if user.profile.gender %}
+                            {% if user.profile.gender == "M" %}Homme{% elif user.profile.gender == "F" %}Femme{% else %}Autre{% endif %}
+                        {% else %}
+                            <span class="empty">Sélectionnez votre genre</span>
+                        {% endif %}
+                    </div>
+                </div>
+                <button type="button" class="modify-btn" data-target="genderModal">Modifier</button>
+            </div>
+
+            <div class="info-row">
+                <div class="info-label">Adresse</div>
+                <div class="info-value">
+                    <div>
+                        {% if user.profile.address %}
+                            {{ user.profile.address }}<br>
+                            {{ user.profile.postal_code }} {{ user.profile.city }}
+                        {% else %}
+                            <span class="empty">Ajoutez votre adresse</span>
+                        {% endif %}
+                    </div>
+                </div>
+                <button type="button" class="modify-btn" data-target="addressModal">Modifier</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ================== MODALS ================== -->
+{% include "client/modals/mon_compte_modals.html" %}
+
+<script src="{% static 'client/script.js' %}"></script>
+
+{% endblock %}

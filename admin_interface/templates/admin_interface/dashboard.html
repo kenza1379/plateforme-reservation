@@ -1,0 +1,53 @@
+{% extends 'admin_interface/base_admin.html' %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+
+<!-- ========== HERO SECTION ========== -->
+<section class="hero">
+    <div>
+        <h1>Bienvenue dans l'Interface Admin</h1>
+        <p>Gérez vos salles, réservations, clients et techniciens en toute simplicité</p>
+    </div>
+</section>
+
+<!-- ========== CARTES STATISTIQUES ========== -->
+<div class="dashboard-cards">
+    <div class="card">
+        <h2>🏢 Salles</h2>
+        <p>{{ total_espaces }}</p>
+        <a href="{% url 'admin_interface:espace_list' %}">Gérer les salles</a>
+    </div>
+
+    <div class="card">
+        <h2>📅 Réservations</h2>
+        <p>{{ total_reservations }}</p>
+        <a href="{% url 'admin_interface:reservation_list' %}">Gérer les réservations</a>
+    </div>
+
+    <div class="card">
+        <h2>👥 Clients</h2>
+        <p>{{ total_clients|default:0 }}</p>
+        <a href="{% url 'admin_interface:client_list' %}">Gérer les clients</a>
+    </div>
+
+    <div class="card">
+        <h2>🔧 Techniciens</h2>
+        <p>{{ total_techniciens }}</p>
+        <a href="{% url 'admin_interface:technicien_list' %}">Gérer les techniciens</a>
+    </div>
+</div>
+
+<!-- ========== ACTIONS RAPIDES ========== -->
+<div class="container">
+    <h2 class="text-center" style="margin: 40px 0 20px 0;">Actions Rapides</h2>
+    <div style="display: flex; justify-content: center; gap: 15px; flex-wrap: wrap; margin-bottom: 50px;">
+        <a href="{% url 'admin_interface:espace_create' %}" class="btn">➕ Ajouter une salle</a>
+        <a href="{% url 'admin_interface:client_create' %}" class="btn">➕ Ajouter un client</a>
+        <a href="{% url 'admin_interface:technicien_create' %}" class="btn">➕ Ajouter un technicien</a>
+        <a href="{% url 'admin_interface:statistiques' %}" class="btn btn-secondary">📊 Voir les statistiques</a>
+    </div>
+</div>
+
+{% endblock %}

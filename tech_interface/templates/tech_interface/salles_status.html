@@ -1,0 +1,52 @@
+{% extends "tech_interface/base_tech.html" %}
+{% block title %}État des salles{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="hero">
+    <div>
+        <h1>État des Salles</h1>
+        <p>Vue d'ensemble de la disponibilité et de la maintenance (automatisée)</p>
+    </div>
+</div>
+
+<!-- Contenu principal -->
+<div class="table-container">
+    <h2 class="mb-20">Toutes les salles</h2>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Salle</th>
+                <th>Capacité</th>
+                <th>Disponibilité</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for s in salles %}
+            <tr>
+                <td><strong>{{ s.nom }}</strong></td>
+                <td>{{ s.capacite }} personnes</td>
+
+                <!-- Disponibilité -->
+                <td>
+                    {% if s.disponible %}
+                        <span class="status-badge status-disponible">✓ Disponible</span>
+                    {% else %}
+                        <span class="status-badge status-refusee">✗ Indisponible</span>
+                    {% endif %}
+                </td>
+
+
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="4" style="text-align: center; color: #999; padding: 40px;">
+                    Aucune salle enregistrée
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

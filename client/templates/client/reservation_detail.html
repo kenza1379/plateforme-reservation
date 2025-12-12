@@ -1,0 +1,742 @@
+{% extends "client/base.html" %}
+
+{% block title %}Détail de la réservation{% endblock %}
+
+{% block content %}
+<div class="detail-container">
+    <!-- Breadcrumb -->
+    <div class="breadcrumb-section">
+        <a href="{% url 'mes_reservations' %}" class="breadcrumb-link">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M19 12H5M12 19l-7-7 7-7"/>
+            </svg>
+            Retour aux réservations
+        </a>
+    </div>
+
+    <!-- En-tête -->
+    <div class="detail-header">
+        <div>
+            <h1>{{ reservation.espace.nom }}</h1>
+            <div class="status-badge status-{{ reservation.status }}">
+                {% if reservation.status == 'confirmee' %}Confirmée
+                {% elif reservation.status == 'en_attente' %}En attente de paiement
+                {% elif reservation.status == 'annulee' %}Annulée
+                {% else %}{{ reservation.get_status_display }}{% endif %}
+            </div>
+        </div>
+        <div class="header-price">
+            <span class="price-label">Total</span>
+            <span class="price-value">{{ reservation.prix_total }}€</span>
+        </div>
+    </div>
+
+    <!-- Alerte de paiement -->
+    {% if reservation.status == 'en_attente' and not reservation.paid %}
+    <div class="payment-alert">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="12" y1="8" x2="12" y2="12"/>
+            <line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+        <div>
+            <strong>Paiement en attente</strong>
+            <p>Finalisez votre réservation en effectuant le paiement.</p>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Contenu principal -->
+    <div class="detail-grid">
+        <!-- Image -->
+        <div class="detail-image-section">
+            {% if reservation.espace.image %}
+                <img src="{{ reservation.espace.image.url }}" alt="{{ reservation.espace.nom }}" class="detail-image">
+            {% else %}
+                <div class="detail-image-placeholder">
+                    <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                        <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                    </svg>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Informations -->
+        <div class="detail-info-section">
+            <!-- Date et heure -->
+            <div class="info-card">
+                <h3>Date et horaires</h3>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <span class="info-label">Date</span>
+                        <span class="info-value">{{ reservation.date|date:"l d F Y" }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Heure de début</span>
+                        <span class="info-value">{{ reservation.heure_debut|time:"H:i" }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Heure de fin</span>
+                        <span class="info-value">{{ reservation.heure_fin|time:"H:i" }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Durée</span>
+                        <span class="info-value">{{ reservation.duree_heures }} heure{% if reservation.duree_heures > 1 %}s{% endif %}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Détails de l'espace -->
+            <div class="info-card">
+                <h3>Détails de l'espace</h3>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <span class="info-label">Type</span>
+                        <span class="info-value">{{ reservation.espace.get_type_espace_display }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Capacité</span>
+                        <span class="info-value">{{ reservation.espace.capacite }} personnes</span>
+                    </div>
+                    <div class="info-item full-width">
+                        <span class="info-label">Adresse</span>
+                        <span class="info-value">{{ reservation.espace.adresse|default:"Non spécifiée" }}</span>
+                    </div>
+                    {% if reservation.espace.ville %}
+                    <div class="info-item">
+                        <span class="info-label">Ville</span>
+                        <span class="info-value">{{ reservation.espace.ville }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Tarification -->
+            <div class="info-card">
+                <h3>Tarification</h3>
+                <div class="pricing-details">
+                    <div class="pricing-row">
+                        <span>Prix par heure</span>
+                        <span>{{ reservation.espace.prix_par_heure }}€</span>
+                    </div>
+                    <div class="pricing-row">
+                        <span>Durée</span>
+                        <span>{{ reservation.duree_heures }}h</span>
+                    </div>
+                    <div class="pricing-divider"></div>
+                    <div class="pricing-row pricing-total">
+                        <span>Total</span>
+                        <span>{{ reservation.prix_total }}€</span>
+                    </div>
+                    {% if reservation.paid %}
+                    <div class="payment-status paid">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="20 6 9 17 4 12"/>
+                        </svg>
+                        Payé le {{ reservation.payment_date|date:"d/m/Y à H:i" }}
+                        {% if reservation.payment_method %}
+                        <br><small>{{ reservation.payment_method }}</small>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Informations de réservation -->
+            <div class="info-card">
+                <h3>Informations</h3>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <span class="info-label">Numéro</span>
+                        <span class="info-value">#{{ reservation.id }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Réservée le</span>
+                        <span class="info-value">{{ reservation.created_at|date:"d/m/Y à H:i"|default:"Non disponible" }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="detail-actions">
+                {% if reservation.status == 'en_attente' and not reservation.paid %}
+                <a href="{% url 'payment_page' reservation.id %}" class="btn-pay-primary">
+                    Procéder au paiement
+                </a>
+                {% endif %}
+                
+                {% if reservation.status == 'en_attente' or reservation.status == 'confirmee' %}
+                <button class="btn-cancel-detail" id="openCancelModal">
+                    Annuler la réservation
+                </button>
+                {% endif %}
+                
+                <a href="{% url 'mes_reservations' %}" class="btn-back">
+                    Retour à mes réservations
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal d'annulation -->
+<div class="modal fade" id="cancelModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content modal-minimal">
+            <div class="modal-header">
+                <h5>Annuler la réservation</h5>
+                <button type="button" class="btn-close" id="closeModalBtn" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Cette action est irréversible. Êtes-vous certain de vouloir annuler cette réservation ?</p>
+                <div class="cancel-summary">
+                    <strong>{{ reservation.espace.nom }}</strong>
+                    <span>{{ reservation.date|date:"d F Y" }} · {{ reservation.heure_debut|time:"H:i" }} - {{ reservation.heure_fin|time:"H:i" }}</span>
+                    <span class="cancel-price">{{ reservation.prix_total }}€</span>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-ghost" id="keepReservationBtn">Conserver</button>
+                <form method="post" action="{% url 'cancel_reservation' reservation.id %}" style="display: inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn-delete">Annuler la réservation</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.detail-container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 1.5rem;
+}
+
+/* Breadcrumb */
+.breadcrumb-section {
+    margin-bottom: 1rem;
+}
+
+.breadcrumb-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #6c757d;
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: color 0.2s ease;
+}
+
+.breadcrumb-link:hover {
+    color: #1a1a1a;
+}
+
+.breadcrumb-link svg {
+    transition: transform 0.2s ease;
+}
+
+.breadcrumb-link:hover svg {
+    transform: translateX(-2px);
+}
+
+/* En-tête */
+.detail-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #e5e5e5;
+}
+
+.detail-header h1 {
+    font-size: 1.75rem;
+    font-weight: 400;
+    color: #1a1a1a;
+    margin-bottom: 0.5rem;
+    letter-spacing: -0.02em;
+}
+
+.status-badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 100px;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+.status-confirmee {
+    background: #d4edda;
+    color: #155724;
+}
+
+.status-en_attente {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.status-annulee {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.header-price {
+    text-align: right;
+}
+
+.price-label {
+    display: block;
+    font-size: 0.75rem;
+    color: #6c757d;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.25rem;
+}
+
+.price-value {
+    display: block;
+    font-size: 1.75rem;
+    font-weight: 300;
+    color: #1a1a1a;
+}
+
+/* Alerte de paiement */
+.payment-alert {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    background: #fff3cd;
+    border: 1px solid #ffeeba;
+    border-radius: 8px;
+    padding: 1.25rem;
+    margin-bottom: 1.5rem;
+}
+
+.payment-alert svg {
+    flex-shrink: 0;
+    color: #856404;
+    margin-top: 0.1rem;
+}
+
+.payment-alert strong {
+    display: block;
+    color: #856404;
+    margin-bottom: 0.25rem;
+}
+
+.payment-alert p {
+    color: #856404;
+    margin: 0;
+    font-size: 0.9rem;
+}
+
+/* Grille */
+.detail-grid {
+    display: grid;
+    grid-template-columns: 1fr 1.2fr;
+    gap: 1.5rem;
+}
+
+/* Image */
+.detail-image-section {
+    position: sticky;
+    top: 2rem;
+    height: fit-content;
+}
+
+.detail-image {
+    width: 100%;
+    height: auto;
+    max-height: 450px;
+    object-fit: cover;
+    border-radius: 8px;
+    border: 1px solid #e5e5e5;
+}
+
+.detail-image-placeholder {
+    width: 100%;
+    height: 350px;
+    background: #F3ECE3;
+    border-radius: 8px;
+    border: 1px solid #e5e5e5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #6c757d;
+}
+
+/* Cartes d'information */
+.detail-info-section {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.info-card {
+    background: #ffffff;
+    border: 1px solid #e5e5e5;
+    border-radius: 8px;
+    padding: 1rem;
+}
+
+.info-card h3 {
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: #1a1a1a;
+    margin-bottom: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+}
+
+.info-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.info-item.full-width {
+    grid-column: 1 / -1;
+}
+
+.info-label {
+    font-size: 0.7rem;
+    color: #6c757d;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.info-value {
+    font-size: 0.95rem;
+    color: #1a1a1a;
+}
+
+/* Tarification */
+.pricing-details {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.pricing-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.9rem;
+    color: #6c757d;
+}
+
+.pricing-divider {
+    height: 1px;
+    background: #e5e5e5;
+    margin: 0.25rem 0;
+}
+
+.pricing-total {
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: #1a1a1a;
+}
+
+.payment-status {
+    margin-top: 0.75rem;
+    padding: 0.75rem;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+}
+
+.payment-status.paid {
+    background: #d4edda;
+    color: #155724;
+}
+
+/* Actions */
+.detail-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.btn-pay-primary {
+    padding: 0.75rem;
+    background: #28a745;
+    color: #ffffff;
+    text-align: center;
+    text-decoration: none;
+    border-radius: 6px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    font-size: 0.95rem;
+    border: none;
+    cursor: pointer;
+}
+
+.btn-pay-primary:hover {
+    background: #218838;
+    transform: translateY(-1px);
+}
+
+.btn-cancel-detail {
+    padding: 0.65rem;
+    background: #F3ECE3;
+    color: #1a1a1a;
+    border: 1px solid #F3ECE3;
+    border-radius: 6px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 0.875rem;
+}
+
+.btn-cancel-detail:hover {
+    background: #e5ddd1;
+    border-color: #e5ddd1;
+}
+
+.btn-back {
+    padding: 0.65rem;
+    background: #1a1a1a;
+    color: #ffffff;
+    text-align: center;
+    text-decoration: none;
+    border-radius: 6px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    font-size: 0.875rem;
+}
+
+.btn-back:hover {
+    background: #000000;
+}
+
+/* Modal */
+.modal-minimal {
+    border: none;
+    border-radius: 12px;
+}
+
+.modal-minimal .modal-header {
+    border: none;
+    padding: 2rem 2rem 1rem;
+}
+
+.modal-minimal .modal-header h5 {
+    font-size: 1.25rem;
+    font-weight: 500;
+    color: #1a1a1a;
+}
+
+.modal-minimal .modal-body {
+    padding: 0 2rem 1.5rem;
+}
+
+.modal-minimal .modal-body p {
+    color: #6c757d;
+    margin-bottom: 1.5rem;
+    font-size: 0.95rem;
+}
+
+.cancel-summary {
+    background: #F3ECE3;
+    padding: 1rem;
+    border-radius: 6px;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.cancel-summary strong {
+    color: #1a1a1a;
+    font-weight: 500;
+}
+
+.cancel-summary span {
+    color: #6c757d;
+    font-size: 0.9rem;
+}
+
+.cancel-price {
+    color: #1a1a1a !important;
+    font-weight: 500;
+    margin-top: 0.5rem;
+}
+
+.modal-minimal .modal-footer {
+    border: none;
+    padding: 0 2rem 2rem;
+    gap: 0.75rem;
+}
+
+.btn-ghost {
+    padding: 0.75rem 1.5rem;
+    background: transparent;
+    color: #1a1a1a;
+    border: 1px solid #e5e5e5;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-ghost:hover {
+    background: #F3ECE3;
+}
+
+.btn-delete {
+    padding: 0.75rem 1.5rem;
+    background: #dc3545;
+    color: #ffffff;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-delete:hover {
+    background: #c82333;
+}
+
+/* Modal backdrop */
+.modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1040;
+    width: 100vw;
+    height: 100vh;
+    background-color: #000;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.modal-backdrop.show {
+    opacity: 0.5;
+}
+
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1050;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    outline: 0;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.modal.show {
+    opacity: 1;
+}
+
+.modal-dialog {
+    position: relative;
+    width: auto;
+    margin: 1.75rem auto;
+    max-width: 500px;
+}
+
+body.modal-open {
+    overflow: hidden;
+}
+
+/* Responsive */
+@media (max-width: 968px) {
+    .detail-grid {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+    }
+    
+    .detail-image-section {
+        position: static;
+    }
+    
+    .detail-header {
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+    
+    .header-price {
+        text-align: left;
+    }
+}
+
+@media (max-width: 640px) {
+    .detail-container {
+        padding: 2rem 1rem;
+    }
+    
+    .detail-header h1 {
+        font-size: 1.5rem;
+    }
+    
+    .price-value {
+        font-size: 1.5rem;
+    }
+    
+    .info-grid {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+
+<script>
+// Gestion du modal sans Bootstrap
+document.addEventListener('DOMContentLoaded', function() {
+    const openBtn = document.getElementById('openCancelModal');
+    const closeBtn = document.getElementById('closeModalBtn');
+    const keepBtn = document.getElementById('keepReservationBtn');
+    const modal = document.getElementById('cancelModal');
+    const modalBackdrop = document.createElement('div');
+    
+    modalBackdrop.className = 'modal-backdrop fade';
+    
+    function openModal() {
+        document.body.appendChild(modalBackdrop);
+        modal.style.display = 'block';
+        setTimeout(() => {
+            modal.classList.add('show');
+            modalBackdrop.classList.add('show');
+            document.body.classList.add('modal-open');
+        }, 10);
+    }
+    
+    function closeModal() {
+        modal.classList.remove('show');
+        modalBackdrop.classList.remove('show');
+        setTimeout(() => {
+            modal.style.display = 'none';
+            if (modalBackdrop.parentNode) {
+                document.body.removeChild(modalBackdrop);
+            }
+            document.body.classList.remove('modal-open');
+        }, 300);
+    }
+    
+    if (openBtn) {
+        openBtn.addEventListener('click', openModal);
+    }
+    
+    if (closeBtn) {
+        closeBtn.addEventListener('click', closeModal);
+    }
+    
+    if (keepBtn) {
+        keepBtn.addEventListener('click', closeModal);
+    }
+    
+    // Fermer en cliquant sur le backdrop
+    modalBackdrop.addEventListener('click', closeModal);
+});
+</script>
+{% endblock %}

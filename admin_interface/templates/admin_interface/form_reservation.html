@@ -1,0 +1,104 @@
+{% extends 'admin_interface/base_admin.html' %}
+
+{% block title %}{% if reservation %}Modifier Réservation{% else %}Créer Réservation{% endif %}{% endblock %}
+
+{% block content %}
+
+<div class="container">
+    <form method="POST">
+        {% csrf_token %}
+        
+        <h2>{% if reservation %}✏️ Modifier une réservation{% else %}➕ Créer une réservation{% endif %}</h2>
+        
+        <!-- Client / User -->
+        <div class="form-group">
+            <label for="{{ form.user.id_for_label }}">Client *</label>
+            {{ form.user }}
+            {% if form.user.errors %}
+                <p style="color: #c0392b; font-size: 0.9rem; margin-top: 5px;">{{ form.user.errors }}</p>
+            {% endif %}
+        </div>
+
+        <!-- Espace -->
+        <div class="form-group">
+            <label for="{{ form.espace.id_for_label }}">Espace *</label>
+            {{ form.espace }}
+            {% if form.espace.errors %}
+                <p style="color: #c0392b; font-size: 0.9rem; margin-top: 5px;">{{ form.espace.errors }}</p>
+            {% endif %}
+        </div>
+
+        <!-- Date -->
+        <div class="form-group">
+            <label for="{{ form.date.id_for_label }}">Date *</label>
+            {{ form.date }}
+            {% if form.date.errors %}
+                <p style="color: #c0392b; font-size: 0.9rem; margin-top: 5px;">{{ form.date.errors }}</p>
+            {% endif %}
+        </div>
+
+        <!-- Heure début -->
+        <div class="form-group">
+            <label for="{{ form.heure_debut.id_for_label }}">Heure de début *</label>
+            {{ form.heure_debut }}
+            {% if form.heure_debut.errors %}
+                <p style="color: #c0392b; font-size: 0.9rem; margin-top: 5px;">{{ form.heure_debut.errors }}</p>
+            {% endif %}
+        </div>
+
+        <!-- Durée -->
+        <div class="form-group">
+            <label for="{{ form.duree_heures.id_for_label }}">Durée (heures) *</label>
+            {{ form.duree_heures }}
+            {% if form.duree_heures.errors %}
+                <p style="color: #c0392b; font-size: 0.9rem; margin-top: 5px;">{{ form.duree_heures.errors }}</p>
+            {% endif %}
+        </div>
+
+        <!-- Prix total  -->
+        <div class="row">
+            <div class="col-md-6">
+                <label>Prix total (€) *</label>
+                {% if reservation %}
+                    {{ form.prix_total }}
+                {% else %}
+                    <input type="text" class="form-control" value="Calculé automatiquement après enregistrement" readonly disabled>
+                    <input type="hidden" name="prix_total" value="0">
+                {% endif %}
+                {% if form.prix_total.errors %}
+                    <div class="text-danger small">{{ form.prix_total.errors }}</div>
+                {% endif %}
+                {% if not reservation %}
+                    <small class="text-muted">Le prix sera calculé automatiquement lors de l'enregistrement</small>
+                {% endif %}
+            </div>
+
+        <!-- Statut -->
+        <div class="form-group">
+            <label for="{{ form.status.id_for_label }}">Statut *</label>
+            {{ form.status }}
+            {% if form.status.errors %}
+                <p style="color: #c0392b; font-size: 0.9rem; margin-top: 5px;">{{ form.status.errors }}</p>
+            {% endif %}
+        </div>
+
+        <!-- Notes admin (optionnel) -->
+        {% if form.notes_admin %}
+        <div class="form-group">
+            <label for="{{ form.notes_admin.id_for_label }}">Notes (admin uniquement)</label>
+            {{ form.notes_admin }}
+            {% if form.notes_admin.errors %}
+                <p style="color: #c0392b; font-size: 0.9rem; margin-top: 5px;">{{ form.notes_admin.errors }}</p>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        <!-- Boutons d'action -->
+        <div class="form-actions">
+            <button type="submit" class="btn">💾 Enregistrer</button>
+            <a href="{% url 'admin_interface:reservation_list' %}" class="btn btn-secondary">← Retour à la liste</a>
+        </div>
+    </form>
+</div>
+
+{% endblock %}

@@ -1,0 +1,159 @@
+{% extends "client/base.html" %}
+{% load static %}
+
+{% block title %}Moyens de paiement{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'client/css/mon_compte.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="account-container">
+
+    {% if messages %}
+    <div class="messages-container">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="breadcrumb-nav">
+        <a href="{% url 'accueil' %}" class="breadcrumb-home">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+            </svg>
+        </a>
+        <span>›</span>
+        <a href="{% url 'mon_compte' %}">Mon compte</a> › Moyens de paiement
+    </div>
+
+    <div class="account-layout">
+
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <a href="{% url 'mon_compte' %}" class="sidebar-item">
+                👤 Informations personnelles
+            </a>
+            <a href="{% url 'security_settings' %}" class="sidebar-item">
+                <div class="sidebar-icon">🔒</div>
+                <span>Paramètres de sécurité</span>
+            </a>
+            <a href="{% url 'payment_methods' %}" class="sidebar-item active">
+                💳 Moyens de paiement
+            </a>
+        </div>
+
+        <!-- Main content -->
+        <!-- Main content -->
+<div class="main-content">
+    <h1>Moyens de paiement</h1>
+    <p class="main-desc">Ajoutez, supprimez ou définissez votre carte par défaut.</p>
+
+    <button class="btn-primary-custom add-card-btn" data-target="addCardModal">
+        Ajouter une carte
+    </button>
+
+    <div class="card-grid">
+        {% for card in payment_cards %}
+        <div class="card card-beige">
+            
+            <!-- Header -->
+            <div class="card-header">
+                <div class="card-info">
+                    <div class="card-type">{{ card.type }}</div>
+                    <div class="card-name">{{ card.name }}</div>
+                </div>
+                {% if default_card_id == card.id %}
+                <span class="card-default">Par défaut</span>
+                {% endif %}
+            </div>
+
+            <!-- Numéro de carte -->
+            <div class="card-number">•••• •••• •••• {{ card.last_four }}</div>
+
+            <!-- Expiration et logo -->
+            <div class="card-footer">
+                <div class="card-expiry">
+                    <div class="card-expiry-label">EXPIRE FIN</div>
+                    <div class="card-expiry-date">{{ card.expiry }}</div>
+                </div>
+                <div class="card-logo">💳</div>
+            </div>
+
+            <!-- Actions -->
+            <div class="card-actions">
+                {% if default_card_id != card.id %}
+                <form method="POST" action="{% url 'set_default_card' card.id %}" class="flex-1">
+                    {% csrf_token %}
+                    <button type="submit" class="btn-card-default">Définir par défaut</button>
+                </form>
+                {% endif %}
+
+                <form method="POST" action="{% url 'delete_card' card.id %}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette carte ?');" class="flex-1">
+                    {% csrf_token %}
+                    <button type="submit" class="modify-btn">Supprimer</button>
+                </form>
+            </div>
+        </div>
+        {% empty %}
+        <div class="card-empty">
+            <div class="card-empty-icon">💳</div>
+            <p class="card-empty-text">Aucune carte enregistrée pour le moment.</p>
+            <p class="card-empty-subtext">Cliquez sur "Ajouter une carte" pour commencer.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+        
+    </div>
+</div>
+
+<!-- Modal Ajouter Carte  -->
+<div id="addCardModal" class="modal-custom hidden">
+    <div class="modal-content rounded-lg shadow-lg p-6 w-full max-w-2xl mx-auto">
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-xl font-semibold">Ajouter une carte</h2>
+            <button class="close-btn text-gray-600 font-bold" data-close>&times;</button>
+        </div>
+
+        <form method="POST" action="{% url 'add_card' %}">
+            {% csrf_token %}
+            <div class="grid grid-cols-2 gap-4 mb-4">
+                <div>
+                    <label class="block text-sm font-medium mb-1">Nom sur la carte</label>
+                    <input type="text" name="cardName" class="form-control w-full" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1">Numéro de carte</label>
+                    <input type="text" name="cardNumber" class="form-control w-full" placeholder="1234 5678 9012 3456" required>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4 mb-4">
+                <div>
+                    <label class="block text-sm font-medium mb-1">Date d'expiration (MM/AA)</label>
+                    <input type="text" name="expiryDate" class="form-control w-full" placeholder="MM / AA" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1">CVV</label>
+                    <input type="text" name="cvv" class="form-control w-full" placeholder="123" required>
+                </div>
+            </div>
+
+            <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 text-sm text-blue-800 mb-4">
+                <strong>Sécurité :</strong> Le CVV n'est pas enregistré pour votre sécurité.
+            </div>
+
+            <div class="flex justify-end gap-3">
+                <button type="button" class="btn-cancel" data-close>Annuler</button>
+                <button type="submit" class="btn-primary-custom">Ajouter</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+<script src="{% static 'client/script.js' %}"></script>
+{% endblock %}
